@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Pin, Lock } from "lucide-react";
 import type { LeaderboardRow } from "@/lib/leaderboard";
-import { M } from "@/lib/format";
+import { M, draftPathFor } from "@/lib/format";
 
 export function PinnedEntryCard({
   row,
@@ -38,7 +38,7 @@ export function PinnedEntryCard({
       <div className="border-t border-[#ECEEF0] px-4 py-3">
         {editable ? (
           <Link
-            href={`/g/${groupId}/draft`}
+            href={draftPathFor(groupId)}
             className="font-display uppercase tracking-wide block w-full text-center py-2.5 rounded-xl bg-[#CC0000] text-white text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
           >
             {row.basket.length === 0 ? "Build roster" : "Edit roster"}

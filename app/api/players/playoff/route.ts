@@ -3,7 +3,7 @@ import { getTeamData, getRegularPlayerByEmail, upsertPlayoffPlayer } from "@/lib
 import { isPlayoffDraftOpen, regularEarned, validateRoster } from "@/lib/scoring";
 import { ALL_TEAMS, MAX_TEAMS, MIN_TEAMS } from "@/lib/teams";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
-import { rosterErrorMessage } from "@/lib/format";
+import { rosterErrorMessage, PUBLIC_GROUP_ID } from "@/lib/format";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
 
 export async function POST(req: NextRequest) {
@@ -17,9 +17,11 @@ export async function POST(req: NextRequest) {
   if (!groupId) {
     return NextResponse.json({ error: "Missing group." }, { status: 400 });
   }
-  const groupToken = req.cookies.get(groupCookieName(groupId))?.value;
-  if (!verifyGroupSessionToken(groupId, groupToken)) {
-    return NextResponse.json({ error: "You need to rejoin this group before submitting a roster." }, { status: 401 });
+  if (groupId !== PUBLIC_GROUP_ID) {
+    const groupToken = req.cookies.get(groupCookieName(groupId))?.value;
+    if (!verifyGroupSessionToken(groupId, groupToken)) {
+      return NextResponse.json({ error: "You need to rejoin this group before submitting a roster." }, { status: 401 });
+    }
   }
 
   if (!name || !entryName || !email || !email.includes("@")) {

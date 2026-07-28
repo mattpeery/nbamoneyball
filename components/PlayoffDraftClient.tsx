@@ -6,7 +6,7 @@ import { Lock } from "lucide-react";
 import { ALL_TEAMS, MAX_TEAMS, MIN_TEAMS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord, PlayoffPlayerRecord } from "@/lib/scoring";
 import { isPlayoffDraftOpen, regularEarned } from "@/lib/scoring";
-import { slug, rosterErrorMessage } from "@/lib/format";
+import { slug, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 
@@ -89,7 +89,7 @@ export function PlayoffDraftClient({
       });
       setShowModal(false);
       if (res.ok) {
-        router.push(`/g/${groupId}/leaderboard`);
+        router.push(leaderboardPathFor(groupId));
         router.refresh();
       } else {
         const data = await res.json().catch(() => null);
@@ -107,7 +107,7 @@ export function PlayoffDraftClient({
     <div className="pb-28">
       <div className="px-4 pt-6 pb-1">
         <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Build Your Playoff Roster</h1>
-        <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>
+        {groupId !== PUBLIC_GROUP_ID && <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>}
         <p className="text-[13px] text-[#55595E] leading-snug mt-1.5">
           Your budget is what you earned in the regular season, {MIN_TEAMS}–{MAX_TEAMS} teams. Playoff wins are worth more
           each round.

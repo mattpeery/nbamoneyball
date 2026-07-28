@@ -6,11 +6,16 @@ import { Lock, ChevronDown } from "lucide-react";
 import { EAST, WEST, REG_BUDGET, MAX_TEAMS, MIN_TEAMS, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
 import { isRegularDraftOpen } from "@/lib/scoring";
-import { slug, M, rosterErrorMessage } from "@/lib/format";
+import { slug, M, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
+import { GroupChoiceModal } from "@/components/GroupChoiceModal";
+import { CreateGroupModal } from "@/components/CreateGroupModal";
+import { JoinGroupModal } from "@/components/JoinGroupModal";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
 import { PricingInfoModal } from "@/components/PricingInfoModal";
+
+type PendingDetails = { name: string; entryName: string; email: string };
 
 export function RegularDraftClient({
   teamdata,
@@ -40,6 +45,8 @@ export function RegularDraftClient({
   const [lookupEmail, setLookupEmail] = useState("");
   const [loaded, setLoaded] = useState<{ name?: string; entryName?: string; email?: string; found: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pendingDetails, setPendingDetails] = useState<PendingDetails | null>(null);
+  const [groupStep, setGroupStep] = useState<"choice" | "create" | "join" | null>(null);
 
   const open = isRegularDraftOpen(teamdata);
   const locked = !open;
@@ -87,24 +94,36 @@ export function RegularDraftClient({
     setShowModal(true);
   }
 
-  async function confirmSubmit({ name, entryName, email }: { name: string; entryName: string; email: string }) {
+  function onDetailsConfirmed(details: PendingDetails) {
+    setShowModal(false);
+    if (groupId === PUBLIC_GROUP_ID) {
+      setPendingDetails(details);
+      setGroupStep("choice");
+    } else {
+      submitRoster(groupId, details);
+    }
+  }
+
+  async function submitRoster(targetGroupId: string, details: PendingDetails, redirectTo?: string) {
     setBusy(true);
     try {
       const res = await fetch("/api/players/regular", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId, name, entryName, email, picks: alloc }),
+        body: JSON.stringify({ groupId: targetGroupId, ...details, picks: alloc }),
       });
-      setShowModal(false);
       if (res.ok) {
-        router.push(`/g/${groupId}/leaderboard`);
+        setGroupStep(null);
+        setPendingDetails(null);
+        router.push(redirectTo || leaderboardPathFor(targetGroupId));
         router.refresh();
       } else {
         const data = await res.json().catch(() => null);
+        setGroupStep(null);
         setMsg({ tone: "error", text: data?.error || "Couldn't submit - check your connection and try again." });
       }
     } catch {
-      setShowModal(false);
+      setGroupStep(null);
       setMsg({ tone: "error", text: "Couldn't submit - check your connection and try again." });
     } finally {
       setBusy(false);
@@ -115,7 +134,7 @@ export function RegularDraftClient({
     <div className="pb-28">
       <div className="px-4 pt-6 pb-1">
         <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Build Your Roster</h1>
-        <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>
+        {groupId !== PUBLIC_GROUP_ID && <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>}
         <ol className="text-[13px] text-[#55595E] leading-snug mt-2 space-y-1.5">
           <li>1. Allocate your $100M budget across {MIN_TEAMS}–{MAX_TEAMS} NBA teams to build your roster.</li>
           <li>
@@ -223,8 +242,35 @@ export function RegularDraftClient({
           defaultEntryName={loaded?.entryName || preloaded?.entryName || ""}
           defaultEmail={loaded?.email || preloaded?.email || lookupEmail || initialEmail || ""}
           onCancel={() => setShowModal(false)}
-          onConfirm={confirmSubmit}
+          onConfirm={onDetailsConfirmed}
           busy={busy}
+        />
+      )}
+
+      {groupStep === "choice" && pendingDetails && (
+        <GroupChoiceModal
+          busy={busy}
+          onCancel={() => {
+            setGroupStep(null);
+            setPendingDetails(null);
+          }}
+          onSkip={() => submitRoster(PUBLIC_GROUP_ID, pendingDetails)}
+          onCreate={() => setGroupStep("create")}
+          onJoin={() => setGroupStep("join")}
+        />
+      )}
+
+      {groupStep === "create" && pendingDetails && (
+        <CreateGroupModal
+          onCancel={() => setGroupStep("choice")}
+          onSuccess={(newGroupId) => submitRoster(newGroupId, pendingDetails, `/g/${newGroupId}/invite`)}
+        />
+      )}
+
+      {groupStep === "join" && pendingDetails && (
+        <JoinGroupModal
+          onCancel={() => setGroupStep("choice")}
+          onSuccess={(joinedGroupId) => submitRoster(joinedGroupId, pendingDetails)}
         />
       )}
     </div>

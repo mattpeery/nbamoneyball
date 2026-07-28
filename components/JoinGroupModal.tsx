@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
-export function JoinGroupModal({ onCancel }: { onCancel: () => void }) {
-  const router = useRouter();
+export function JoinGroupModal({
+  onCancel,
+  onSuccess,
+}: {
+  onCancel: () => void;
+  onSuccess: (groupId: string, groupName: string) => void;
+}) {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -27,8 +31,7 @@ export function JoinGroupModal({ onCancel }: { onCancel: () => void }) {
         setBusy(false);
         return;
       }
-      router.push(`/g/${data.groupId}/leaderboard`);
-      router.refresh();
+      onSuccess(data.groupId, data.groupName);
     } catch {
       setErr("Couldn't reach the server - check your connection.");
       setBusy(false);
@@ -45,7 +48,7 @@ export function JoinGroupModal({ onCancel }: { onCancel: () => void }) {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. The Boys"
+          placeholder="e.g. theboys2027"
           className="w-full mt-1 mb-3 px-3.5 py-2.5 rounded-xl bg-white border border-[#DADFE3] text-[14px] text-[#131518] outline-none focus:border-[#CC0000]/60 placeholder:text-[#9AA0A6]"
         />
 
@@ -63,7 +66,7 @@ export function JoinGroupModal({ onCancel }: { onCancel: () => void }) {
 
         <div className="flex gap-2 mt-4">
           <button onClick={onCancel} className="flex-1 py-3 rounded-xl bg-white border border-[#DADFE3] text-[#131518] text-[14px] font-medium active:scale-[0.98]">
-            Cancel
+            Back
           </button>
           <button
             onClick={submit}

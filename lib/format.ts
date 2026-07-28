@@ -36,3 +36,13 @@ export function M2(n: number | undefined): string {
 export function sanitizeGroupName(raw: string): string {
   return raw.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
+
+export const PUBLIC_GROUP_ID = "public";
+
+export function draftPathFor(groupId: string): string {
+  return groupId === PUBLIC_GROUP_ID ? "/draft" : `/g/${groupId}/draft`;
+}
+
+export function leaderboardPathFor(groupId: string): string {
+  return groupId === PUBLIC_GROUP_ID ? "/leaderboard" : `/g/${groupId}/leaderboard`;
+}

@@ -1,11 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { Flag } from "lucide-react";
 import { useCountdown } from "@/lib/useCountdown";
 import { AdminGateModal } from "./AdminGateModal";
-import { CreateGroupModal } from "./CreateGroupModal";
-import { JoinGroupModal } from "./JoinGroupModal";
 
 function CountUnit({ value, label }: { value: number; label: string }) {
   return (
@@ -20,8 +19,6 @@ export function LandingHero({ playerCount, draftDeadline }: { playerCount: numbe
   const { d, h, m, s, done } = useCountdown(draftDeadline);
   const [tapCount, setTapCount] = useState(0);
   const [showAdminGate, setShowAdminGate] = useState(false);
-  const [showCreate, setShowCreate] = useState(false);
-  const [showJoin, setShowJoin] = useState(false);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function handleTitleTap() {
@@ -55,20 +52,12 @@ export function LandingHero({ playerCount, draftDeadline }: { playerCount: numbe
           </p>
         </div>
 
-        <div className="mt-8 flex gap-3">
-          <button
-            onClick={() => setShowCreate(true)}
-            className="font-display uppercase tracking-wide flex-1 py-4 rounded-2xl bg-[#CC0000] text-white text-[15px] font-semibold active:scale-[0.98] transition-transform text-center"
-          >
-            Create a Group
-          </button>
-          <button
-            onClick={() => setShowJoin(true)}
-            className="font-display uppercase tracking-wide flex-1 py-4 rounded-2xl bg-white border border-[#DADFE3] text-[#131518] text-[15px] font-semibold active:scale-[0.98] transition-transform"
-          >
-            Join a Group
-          </button>
-        </div>
+        <Link
+          href="/draft"
+          className="font-display uppercase tracking-wide mt-8 block w-full py-4 rounded-2xl bg-[#CC0000] text-white text-[15px] font-semibold active:scale-[0.98] transition-transform text-center"
+        >
+          Build Your Team
+        </Link>
 
         <div className="mt-8 border border-[#DADFE3] bg-white rounded-2xl px-4 py-5 shadow-sm">
           <div className="text-center text-[11px] text-[#6B7280] uppercase tracking-wide mb-3">
@@ -96,9 +85,9 @@ export function LandingHero({ playerCount, draftDeadline }: { playerCount: numbe
 
         <div className="mt-10 space-y-3">
           {[
-            ["1", "Create or join a group with a name and password"],
-            ["2", "Build your regular season roster and earn points for wins"],
-            ["3", "Use your points to build a winning playoff roster and become your group's champion!"],
+            ["1", "Build your regular season roster and earn points for wins"],
+            ["2", "When you submit, create your account and optionally join a private group"],
+            ["3", "Use your points to build a winning playoff roster and become champion!"],
           ].map(([n, txt]) => (
             <div key={n} className="flex items-start gap-3">
               <div className="shrink-0 w-6 h-6 rounded-full bg-[#CC0000]/10 border border-[#CC0000]/30 text-[#CC0000] text-[11px] font-bold flex items-center justify-center mt-0.5">
@@ -113,8 +102,6 @@ export function LandingHero({ playerCount, draftDeadline }: { playerCount: numbe
       <div className="text-center pb-6 text-[11px] text-[#9AA0A6]">Free to play · results update nightly</div>
 
       {showAdminGate && <AdminGateModal onCancel={() => setShowAdminGate(false)} />}
-      {showCreate && <CreateGroupModal onCancel={() => setShowCreate(false)} />}
-      {showJoin && <JoinGroupModal onCancel={() => setShowJoin(false)} />}
     </div>
   );
 }
