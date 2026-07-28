@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
-import { ALL_TEAMS, MAX_TEAMS, MIN_TEAMS, type TeamData } from "@/lib/teams";
+import { ALL_TEAMS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord, PlayoffPlayerRecord } from "@/lib/scoring";
 import { isPlayoffDraftOpen, regularEarned } from "@/lib/scoring";
 import { slug, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
@@ -40,7 +40,6 @@ export function PlayoffDraftClient({
   const spent = useMemo(() => Object.values(alloc).reduce((a, b) => a + b, 0), [alloc]);
   const remaining = budget - spent;
   const distinctTeams = Object.values(alloc).filter((v) => v > 0).length;
-  const atCap = distinctTeams >= MAX_TEAMS;
   const playoffTeams = ALL_TEAMS.filter((t) => teamdata.playoff.teams[t]).sort(
     (a, b) => (teamdata.playoff.prices[b] ?? 0) - (teamdata.playoff.prices[a] ?? 0)
   );
@@ -53,10 +52,6 @@ export function PlayoffDraftClient({
         const next = { ...a };
         delete next[team];
         return next;
-      }
-      if (distinctTeams >= MAX_TEAMS) {
-        setMsg({ tone: "error", text: rosterErrorMessage("too-many-teams") });
-        return a;
       }
       const price = teamdata.playoff.prices[team] || 0;
       if (price > remaining) {
@@ -86,7 +81,6 @@ export function PlayoffDraftClient({
     if (!email.trim()) return setMsg({ tone: "error", text: "Enter the email you used in the regular season." });
     if (!myRegular) return setMsg({ tone: "error", text: "No regular-season roster found for that email." });
     if (distinctTeams === 0) return setMsg({ tone: "error", text: rosterErrorMessage("empty") });
-    if (distinctTeams < MIN_TEAMS) return setMsg({ tone: "error", text: rosterErrorMessage("too-few-teams") });
     setShowModal(true);
   }
 
@@ -120,8 +114,7 @@ export function PlayoffDraftClient({
         <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Build Your Playoff Roster</h1>
         {groupId !== PUBLIC_GROUP_ID && <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>}
         <p className="text-[13px] text-[#55595E] leading-snug mt-1.5">
-          Your budget is what you earned in the regular season, {MIN_TEAMS}–{MAX_TEAMS} teams. Playoff wins are worth more
-          each round.
+          Your budget is what you earned in the regular season. Playoff wins are worth more each round.
         </p>
       </div>
       <div className="px-4 mb-3">
@@ -164,7 +157,7 @@ export function PlayoffDraftClient({
               owned={(alloc[t] || 0) > 0}
               onToggle={toggleTeam}
               disabled={teamdata.playoff.locked || !myRegular}
-              affordable={!atCap && remaining >= (teamdata.playoff.prices[t] || 0)}
+              affordable={remaining >= (teamdata.playoff.prices[t] || 0)}
             />
           ))}
         </div>

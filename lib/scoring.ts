@@ -55,25 +55,15 @@ export function isPlayoffDraftOpen(teamdata: TeamData): boolean {
   return !teamdata.playoff.locked;
 }
 
-export type RosterValidationError =
-  | "empty"
-  | "too-few-teams"
-  | "over-budget"
-  | "too-many-teams"
-  | "invalid-amount"
-  | "locked";
+export type RosterValidationError = "empty" | "over-budget" | "invalid-amount" | "locked";
 
 export function validateRoster(
   picks: Record<string, number>,
   budget: number,
-  minTeams: number,
-  maxTeams: number,
   prices: Record<string, number>
 ): RosterValidationError | null {
   const entries = Object.entries(picks).filter(([, v]) => v > 0);
   if (entries.length === 0) return "empty";
-  if (entries.length < minTeams) return "too-few-teams";
-  if (entries.length > maxTeams) return "too-many-teams";
   let spent = 0;
   for (const [team, dollars] of entries) {
     const price = prices[team];

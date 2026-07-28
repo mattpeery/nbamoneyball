@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTeamData, getRegularPlayerByEmail, upsertPlayoffPlayer } from "@/lib/data";
 import { isPlayoffDraftOpen, regularEarned, validateRoster } from "@/lib/scoring";
-import { ALL_TEAMS, MAX_TEAMS, MIN_TEAMS } from "@/lib/teams";
+import { ALL_TEAMS } from "@/lib/teams";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { rosterErrorMessage, PUBLIC_GROUP_ID } from "@/lib/format";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   }
   const budget = Math.floor(regularEarned(myRegular, teamdata));
 
-  const validationError = validateRoster(picks, budget, MIN_TEAMS, MAX_TEAMS, teamdata.playoff.prices);
+  const validationError = validateRoster(picks, budget, teamdata.playoff.prices);
   if (validationError) {
     return NextResponse.json({ error: rosterErrorMessage(validationError) }, { status: 400 });
   }

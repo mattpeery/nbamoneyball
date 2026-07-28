@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, Trophy, Coins } from "lucide-react";
+import { ChevronRight, Trophy, Banknote } from "lucide-react";
 import type { LeaderboardRow } from "@/lib/leaderboard";
 import { coins } from "@/lib/format";
 
@@ -39,7 +39,7 @@ export function LeaderboardList({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
             <div className="text-right">
               <div className="font-display text-[17px] font-bold text-[#131518] flex items-center gap-1 justify-end">
                 {isPlayoff ? r.score.toFixed(1) : coins(r.score)}
-                {!isPlayoff && <Coins size={13} className="text-[#D4A017]" />}
+                {!isPlayoff && <Banknote size={13} className="text-[#16A34A]" />}
               </div>
               <div className="text-[10px] text-[#6B7280]">{r.unit}</div>
             </div>
@@ -53,7 +53,7 @@ export function LeaderboardList({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
                   <span className="text-[#6B7280] text-[12px]">{b.stat}</span>
                   <span className="text-[#131518] font-medium w-16 text-right flex items-center justify-end gap-0.5">
                     {isPlayoff ? b.contrib.toFixed(1) + " pt" : coins(b.contrib)}
-                    {!isPlayoff && <Coins size={11} className="text-[#D4A017]" />}
+                    {!isPlayoff && <Banknote size={11} className="text-[#16A34A]" />}
                   </span>
                 </div>
               ))}

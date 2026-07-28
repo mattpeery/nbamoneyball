@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTeamData, upsertRegularPlayer } from "@/lib/data";
 import { isRegularDraftOpen, validateRoster } from "@/lib/scoring";
-import { ALL_TEAMS, MAX_TEAMS, MIN_TEAMS, REG_BUDGET } from "@/lib/teams";
+import { ALL_TEAMS, REG_BUDGET } from "@/lib/teams";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { rosterErrorMessage, PUBLIC_GROUP_ID } from "@/lib/format";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "The regular-season draft is locked." }, { status: 423 });
   }
 
-  const validationError = validateRoster(picks, REG_BUDGET, MIN_TEAMS, MAX_TEAMS, teamdata.regular.prices);
+  const validationError = validateRoster(picks, REG_BUDGET, teamdata.regular.prices);
   if (validationError) {
     return NextResponse.json({ error: rosterErrorMessage(validationError) }, { status: 400 });
   }

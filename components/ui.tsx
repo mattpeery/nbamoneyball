@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, ChevronDown, Coins } from "lucide-react";
-import { FULL_NAMES, MAX_TEAMS, MIN_TEAMS } from "@/lib/teams";
+import { Check, X, ChevronDown, Banknote } from "lucide-react";
+import { FULL_NAMES } from "@/lib/teams";
 import { coins } from "@/lib/format";
 
-const GOLD = "#D4A017";
+const CASH = "#16A34A";
 
 export function Section({
   title,
@@ -44,7 +44,6 @@ export function BudgetBar({
   const over = remaining < 0;
   const pct = total > 0 ? Math.max(0, Math.min(100, (remaining / total) * 100)) : 0;
   const roster = Object.entries(alloc).filter(([, v]) => v > 0);
-  const atCap = roster.length >= MAX_TEAMS;
   return (
     <div className="sticky top-0 z-30 bg-[#F4F5F6] px-4 pt-2 pb-3 border-b border-[#DADFE3]">
       <div className="bg-white border border-[#DADFE3] rounded-2xl px-4 py-3.5 shadow-sm">
@@ -55,21 +54,19 @@ export function BudgetBar({
               className={`font-display text-[26px] font-bold leading-tight flex items-center gap-1.5 ${over ? "text-[#CC0000]" : "text-[#131518]"}`}
             >
               {coins(remaining)}
-              <Coins size={19} style={{ color: over ? "#CC0000" : GOLD }} />
+              <Banknote size={19} style={{ color: over ? "#CC0000" : CASH }} />
             </div>
           </div>
           <div className="text-right text-[11.5px] text-[#6B7280]">
             {coins(spent)} of {coins(total)} spent
             <br />
-            <span className={atCap ? "text-[#CC0000] font-medium" : ""}>
-              {roster.length} team{roster.length !== 1 ? "s" : ""} selected (min. {MIN_TEAMS}, max. {MAX_TEAMS})
-            </span>
+            {roster.length} team{roster.length !== 1 ? "s" : ""} selected
           </div>
         </div>
         <div className="h-1.5 rounded-full bg-[#E5E7EA] overflow-hidden">
           <div
             className="h-full rounded-full transition-all"
-            style={{ width: `${pct}%`, backgroundColor: over ? "#CC0000" : GOLD }}
+            style={{ width: `${pct}%`, backgroundColor: over ? "#CC0000" : CASH }}
           />
         </div>
 
@@ -83,7 +80,7 @@ export function BudgetBar({
                   className="inline-flex items-center gap-1 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-1.5 py-1 text-[11px] text-[#3A3F45]"
                 >
                   {team} · {coins(dollars)}
-                  <Coins size={10} style={{ color: GOLD }} />
+                  <Banknote size={10} style={{ color: CASH }} />
                   {onRemove && (
                     <button
                       onClick={() => onRemove(team)}
@@ -124,17 +121,9 @@ export function TeamCard({
   return (
     <div className={`flex items-center justify-between gap-3 py-3 px-3 border-b border-[#ECEEF0] last:border-b-0 ${owned ? "bg-[#FAFAFA]" : ""}`}>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-baseline gap-2 flex-wrap">
           <div className="text-[13px] font-medium text-[#131518]">{FULL_NAMES[team] || team}</div>
-          {projectedWins !== undefined && (
-            <span className="shrink-0 text-[10px] font-medium text-[#6B7280] bg-[#EEF0F2] rounded-full px-1.5 py-0.5 whitespace-nowrap">
-              {projectedWins} proj. W
-            </span>
-          )}
-        </div>
-        <div className="font-display text-[20px] font-bold text-[#131518] leading-none mt-1.5 flex items-center gap-1">
-          {coins(price)}
-          <Coins size={15} style={{ color: GOLD }} />
+          {projectedWins !== undefined && <div className="text-[13px] text-[#6B7280]">{projectedWins} projected wins</div>}
         </div>
       </div>
       <button
@@ -155,7 +144,7 @@ export function TeamCard({
         ) : (
           <>
             Buy {team}: {coins(price)}
-            <Coins size={13} />
+            <Banknote size={13} />
           </>
         )}
       </button>

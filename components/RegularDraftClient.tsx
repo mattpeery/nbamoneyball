@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, ChevronDown } from "lucide-react";
-import { EAST, WEST, REG_BUDGET, MAX_TEAMS, MIN_TEAMS, PROJECTED_WINS, type TeamData } from "@/lib/teams";
+import { EAST, WEST, REG_BUDGET, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
 import { isRegularDraftOpen } from "@/lib/scoring";
 import { slug, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
@@ -54,7 +54,6 @@ export function RegularDraftClient({
   const spent = useMemo(() => Object.values(alloc).reduce((a, b) => a + b, 0), [alloc]);
   const remaining = REG_BUDGET - spent;
   const distinctTeams = Object.values(alloc).filter((v) => v > 0).length;
-  const atCap = distinctTeams >= MAX_TEAMS;
 
   function toggleTeam(team: string) {
     setMsg(null);
@@ -64,10 +63,6 @@ export function RegularDraftClient({
         const next = { ...a };
         delete next[team];
         return next;
-      }
-      if (distinctTeams >= MAX_TEAMS) {
-        setMsg({ tone: "error", text: rosterErrorMessage("too-many-teams") });
-        return a;
       }
       const price = teamdata.regular.prices[team] || 0;
       if (price > remaining) {
@@ -96,7 +91,6 @@ export function RegularDraftClient({
   function trySubmit() {
     setMsg(null);
     if (distinctTeams === 0) return setMsg({ tone: "error", text: rosterErrorMessage("empty") });
-    if (distinctTeams < MIN_TEAMS) return setMsg({ tone: "error", text: rosterErrorMessage("too-few-teams") });
     setShowModal(true);
   }
 
@@ -142,7 +136,7 @@ export function RegularDraftClient({
         <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Build Your Roster</h1>
         {groupId !== PUBLIC_GROUP_ID && <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>}
         <ol className="text-[13px] text-[#55595E] leading-snug mt-2 space-y-1.5">
-          <li>1. Spend up to 200 gold coins buying {MIN_TEAMS}–{MAX_TEAMS} NBA teams to build your roster.</li>
+          <li>1. Spend up to {REG_BUDGET} gold coins buying NBA teams to build your roster.</li>
           <li>
             2. During the &apos;26–&apos;27 regular season, each team on your roster earns you 1 coin for every game
             it wins.
@@ -214,7 +208,7 @@ export function RegularDraftClient({
                     owned={(alloc[t] || 0) > 0}
                     onToggle={toggleTeam}
                     disabled={locked}
-                    affordable={!atCap && remaining >= (teamdata.regular.prices[t] || 0)}
+                    affordable={remaining >= (teamdata.regular.prices[t] || 0)}
                     projectedWins={PROJECTED_WINS[t]}
                   />
                 ))}

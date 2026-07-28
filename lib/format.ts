@@ -1,5 +1,4 @@
 import type { RosterValidationError } from "./scoring";
-import { MIN_TEAMS, MAX_TEAMS } from "./teams";
 
 export function slug(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, "-");
@@ -8,11 +7,7 @@ export function slug(name: string): string {
 export function rosterErrorMessage(code: RosterValidationError): string {
   switch (code) {
     case "empty":
-      return `Add at least ${MIN_TEAMS} teams.`;
-    case "too-few-teams":
-      return `Add at least ${MIN_TEAMS} teams (min. ${MIN_TEAMS}, max. ${MAX_TEAMS}).`;
-    case "too-many-teams":
-      return `Max ${MAX_TEAMS} teams per roster.`;
+      return "Add at least 1 team.";
     case "over-budget":
       return "Over budget - reduce a pick before submitting.";
     case "invalid-amount":
