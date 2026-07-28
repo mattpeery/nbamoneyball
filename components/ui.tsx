@@ -140,13 +140,15 @@ export function TeamCard({
 
   return (
     <div
-      className={`grid grid-cols-[2fr_1.4fr_84px] items-center gap-x-1.5 py-2 px-2.5 border-b border-[#ECEEF0] last:border-b-0 ${
+      className={`grid grid-cols-[1fr_84px] items-center gap-x-1.5 py-2 px-2.5 border-b border-[#ECEEF0] last:border-b-0 ${
         owned ? "bg-[#FAFAFA]" : ""
       }`}
     >
-      <div className="min-w-0 text-[14px] font-semibold text-[#131518] truncate">{FULL_NAMES[team] || team}</div>
-      <div className="min-w-0 text-[12.5px] text-[#6B7280] truncate">
-        {projectedWins !== undefined ? `${projectedWins} projected wins` : ""}
+      <div className="min-w-0">
+        <div className="text-[14px] font-semibold text-[#131518] truncate">{FULL_NAMES[team] || team}</div>
+        {projectedWins !== undefined && (
+          <div className="text-[12.5px] text-[#6B7280] truncate">{projectedWins} projected wins</div>
+        )}
       </div>
       <button
         disabled={owned ? !canRemove : !canBuy}
