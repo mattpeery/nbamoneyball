@@ -109,6 +109,7 @@ export function TeamCard({
   onChange,
   disabled,
   atCap,
+  projectedWins,
 }: {
   team: string;
   price: number;
@@ -116,6 +117,7 @@ export function TeamCard({
   onChange: (team: string, value: number) => void;
   disabled?: boolean;
   atCap?: boolean;
+  projectedWins?: number;
 }) {
   const shares = price > 0 ? allocated / price : 0;
   const active = allocated > 0;
@@ -125,7 +127,14 @@ export function TeamCard({
   return (
     <div className={`flex items-center justify-between gap-3 py-3 px-3 border-b border-[#ECEEF0] last:border-b-0 ${active ? "bg-[#FAFAFA]" : ""}`}>
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-medium text-[#131518] truncate">{FULL_NAMES[team] || team}</div>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="text-[13px] font-medium text-[#131518]">{FULL_NAMES[team] || team}</div>
+          {projectedWins !== undefined && (
+            <span className="shrink-0 text-[10px] font-medium text-[#6B7280] bg-[#EEF0F2] rounded-full px-1.5 py-0.5 whitespace-nowrap">
+              {projectedWins} proj. W
+            </span>
+          )}
+        </div>
         <div className="font-display text-[24px] font-bold text-[#131518] leading-none mt-1">
           {M(price)}
           <span className="font-sans text-[11px] font-normal text-[#9AA0A6]"> / share</span>

@@ -3,13 +3,14 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, ChevronDown } from "lucide-react";
-import { EAST, WEST, REG_BUDGET, MAX_TEAMS, MIN_TEAMS, type TeamData } from "@/lib/teams";
+import { EAST, WEST, REG_BUDGET, MAX_TEAMS, MIN_TEAMS, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
 import { isRegularDraftOpen } from "@/lib/scoring";
 import { slug, M, rosterErrorMessage } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
+import { PricingInfoModal } from "@/components/PricingInfoModal";
 
 export function RegularDraftClient({
   teamdata,
@@ -31,6 +32,7 @@ export function RegularDraftClient({
   const [confOpen, setConfOpen] = useState({ East: true, West: true });
   const [showModal, setShowModal] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showPricingInfo, setShowPricingInfo] = useState(false);
   const [lookupEmail, setLookupEmail] = useState("");
   const [loaded, setLoaded] = useState<{ name?: string; entryName?: string; email?: string; found: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -128,9 +130,16 @@ export function RegularDraftClient({
         <div className="mt-3 inline-flex items-center gap-1.5 text-[11.5px] font-medium text-[#CC0000] bg-[#CC0000]/8 border border-[#CC0000]/25 rounded-full px-3 py-1.5">
           <Lock size={11} /> Picks lock at tip-off on NBA Opening Day (Oct. 20)
         </div>
+        <button
+          onClick={() => setShowPricingInfo(true)}
+          className="block mt-2.5 text-[12.5px] text-[#CC0000] font-medium underline decoration-dotted"
+        >
+          How Does Pricing Work?
+        </button>
       </div>
 
       {showHowItWorks && <HowItWorksModal onClose={() => setShowHowItWorks(false)} />}
+      {showPricingInfo && <PricingInfoModal onClose={() => setShowPricingInfo(false)} />}
 
       {!preloaded && (
         <LoadLookup
@@ -176,6 +185,7 @@ export function RegularDraftClient({
                     onChange={setTeam}
                     disabled={locked}
                     atCap={atCap}
+                    projectedWins={PROJECTED_WINS[t]}
                   />
                 ))}
               </div>
