@@ -8,11 +8,13 @@ export const WEST = [
 ];
 export const ALL_TEAMS = [...EAST, ...WEST];
 
+// Sourced from the "2026-2027 version" tab (columns A-C) of the team's
+// shared pricing sheet -- derived from Vegas-projected win totals.
 export const DEFAULT_PRICES: Record<string, number> = {
-  Celtics: 25, Pistons: 25, Cavaliers: 24, "76ers": 24, Heat: 23, Raptors: 23, Pacers: 22, Magic: 22,
-  Hawks: 21, Hornets: 19, Wizards: 18, Bucks: 13, Bulls: 13, Knicks: 26, Nets: 8,
-  Thunder: 31, Spurs: 30, Nuggets: 25, Timberwolves: 24, Rockets: 24, Lakers: 22, "Trail Blazers": 22,
-  Warriors: 20, Suns: 19, Jazz: 18, Mavericks: 17, Pelicans: 15, Clippers: 14, Kings: 20, Grizzlies: 21,
+  Knicks: 30, Celtics: 29, Pistons: 29, Cavaliers: 27, "76ers": 27, Heat: 26, Raptors: 26, Pacers: 25,
+  Magic: 25, Hawks: 24, Hornets: 21, Wizards: 20, Bucks: 15, Bulls: 15, Nets: 11,
+  Thunder: 35, Spurs: 35, Nuggets: 28, Timberwolves: 28, Rockets: 27, Lakers: 25, "Trail Blazers": 25,
+  Warriors: 23, Suns: 22, Jazz: 20, Mavericks: 20, Pelicans: 17, Clippers: 16, Grizzlies: 16, Kings: 13,
 };
 
 // Vegas-projected regular-season win totals, shown alongside price on the
