@@ -60,7 +60,7 @@ export function LandingHero({
           <p className="font-display text-[19px] font-medium text-[#55595E] mt-2 leading-snug">How many wins can you buy?</p>
           {hasHero && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src="/hero.png" alt="NBA Moneyball" className="mx-auto mt-5 w-48 h-auto" />
+            <img src="/hero.png" alt="NBA Moneyball" className="mx-auto mt-5 w-48 h-auto rounded-2xl" />
           )}
         </div>
 
