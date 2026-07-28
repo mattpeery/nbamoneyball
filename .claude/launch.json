@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sanity",
+      "runtimeExecutable": "/usr/bin/uname",
+      "runtimeArgs": ["-a"],
+      "port": 3999
+    },
+    {
+      "name": "dev",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-lc", "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 20 >/dev/null 2>&1; npm run dev"],
+      "port": 3000
+    }
+  ]
+}
