@@ -6,7 +6,7 @@ import { Lock, ChevronDown } from "lucide-react";
 import { EAST, WEST, REG_BUDGET, MAX_TEAMS, MIN_TEAMS, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
 import { isRegularDraftOpen } from "@/lib/scoring";
-import { slug, M, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
+import { slug, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 import { GroupChoiceModal } from "@/components/GroupChoiceModal";
@@ -56,21 +56,33 @@ export function RegularDraftClient({
   const distinctTeams = Object.values(alloc).filter((v) => v > 0).length;
   const atCap = distinctTeams >= MAX_TEAMS;
 
-  function setTeam(team: string, rawVal: number) {
+  function toggleTeam(team: string) {
+    setMsg(null);
     setAlloc((a) => {
-      const already = (a[team] || 0) > 0;
-      const otherSpent = Object.entries(a).reduce((s, [k, v]) => (k === team ? s : s + v), 0);
-      const maxAllowed = Math.max(0, REG_BUDGET - otherSpent);
-      const val = Math.max(0, Math.min(rawVal, maxAllowed));
-      if (val > 0 && !already && distinctTeams >= MAX_TEAMS) {
+      const owned = (a[team] || 0) > 0;
+      if (owned) {
+        const next = { ...a };
+        delete next[team];
+        return next;
+      }
+      if (distinctTeams >= MAX_TEAMS) {
         setMsg({ tone: "error", text: rosterErrorMessage("too-many-teams") });
         return a;
       }
-      return { ...a, [team]: val };
+      const price = teamdata.regular.prices[team] || 0;
+      if (price > remaining) {
+        setMsg({ tone: "error", text: "Not enough coins left to buy this team." });
+        return a;
+      }
+      return { ...a, [team]: price };
     });
   }
   function removeTeam(team: string) {
-    setTeam(team, 0);
+    setAlloc((a) => {
+      const next = { ...a };
+      delete next[team];
+      return next;
+    });
   }
 
   function doLookup() {
@@ -85,12 +97,6 @@ export function RegularDraftClient({
     setMsg(null);
     if (distinctTeams === 0) return setMsg({ tone: "error", text: rosterErrorMessage("empty") });
     if (distinctTeams < MIN_TEAMS) return setMsg({ tone: "error", text: rosterErrorMessage("too-few-teams") });
-    if (remaining < 0) return setMsg({ tone: "error", text: `Over budget by ${M(-remaining)}.` });
-    if (remaining > 0)
-      return setMsg({
-        tone: "error",
-        text: `You need to spend your full $100M budget before submitting - you have ${M(remaining)} left to allocate.`,
-      });
     setShowModal(true);
   }
 
@@ -136,13 +142,13 @@ export function RegularDraftClient({
         <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Build Your Roster</h1>
         {groupId !== PUBLIC_GROUP_ID && <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>}
         <ol className="text-[13px] text-[#55595E] leading-snug mt-2 space-y-1.5">
-          <li>1. Allocate your $100M budget across {MIN_TEAMS}–{MAX_TEAMS} NBA teams to build your roster.</li>
+          <li>1. Spend up to 200 gold coins buying {MIN_TEAMS}–{MAX_TEAMS} NBA teams to build your roster.</li>
           <li>
-            2. During the &apos;26–&apos;27 regular season, you will earn $1M for each of your teams&apos; wins,
-            multiplied by the number of shares you have.
+            2. During the &apos;26–&apos;27 regular season, each team on your roster earns you 1 coin for every game
+            it wins.
           </li>
           <li>
-            3. You will use your regular season earnings to build your playoff roster in April.{" "}
+            3. You will use the coins you earn to build your playoff roster in April.{" "}
             <button
               onClick={() => setShowHowItWorks(true)}
               className="text-[#CC0000] font-medium underline decoration-dotted"
@@ -176,7 +182,7 @@ export function RegularDraftClient({
           notFoundMsg="No roster found for that email."
         />
       )}
-      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} prices={teamdata.regular.prices} onRemove={removeTeam} />
+      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} onRemove={removeTeam} />
 
       {locked && (
         <div className="mt-3">
@@ -205,10 +211,10 @@ export function RegularDraftClient({
                     key={t}
                     team={t}
                     price={teamdata.regular.prices[t]}
-                    allocated={alloc[t] || 0}
-                    onChange={setTeam}
+                    owned={(alloc[t] || 0) > 0}
+                    onToggle={toggleTeam}
                     disabled={locked}
-                    atCap={atCap}
+                    affordable={!atCap && remaining >= (teamdata.regular.prices[t] || 0)}
                     projectedWins={PROJECTED_WINS[t]}
                   />
                 ))}

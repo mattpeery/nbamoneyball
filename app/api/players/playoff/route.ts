@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   }
   const budget = Math.floor(regularEarned(myRegular, teamdata));
 
-  const validationError = validateRoster(picks, budget, MIN_TEAMS, MAX_TEAMS);
+  const validationError = validateRoster(picks, budget, MIN_TEAMS, MAX_TEAMS, teamdata.playoff.prices);
   if (validationError) {
     return NextResponse.json({ error: rosterErrorMessage(validationError) }, { status: 400 });
   }

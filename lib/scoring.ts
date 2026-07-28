@@ -67,15 +67,17 @@ export function validateRoster(
   picks: Record<string, number>,
   budget: number,
   minTeams: number,
-  maxTeams: number
+  maxTeams: number,
+  prices: Record<string, number>
 ): RosterValidationError | null {
   const entries = Object.entries(picks).filter(([, v]) => v > 0);
   if (entries.length === 0) return "empty";
   if (entries.length < minTeams) return "too-few-teams";
   if (entries.length > maxTeams) return "too-many-teams";
   let spent = 0;
-  for (const [, dollars] of entries) {
-    if (!Number.isInteger(dollars) || dollars < 0) return "invalid-amount";
+  for (const [team, dollars] of entries) {
+    const price = prices[team];
+    if (price === undefined || dollars < 0 || Math.abs(dollars - price) > 0.01) return "invalid-amount";
     spent += dollars;
   }
   if (spent > budget) return "over-budget";

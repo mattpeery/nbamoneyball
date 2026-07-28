@@ -16,7 +16,7 @@ export function rosterErrorMessage(code: RosterValidationError): string {
     case "over-budget":
       return "Over budget - reduce a pick before submitting.";
     case "invalid-amount":
-      return "One of your picks has an invalid amount.";
+      return "One of your picks doesn't match the current price - remove it and buy again.";
     case "locked":
       return "The draft is locked.";
     default:
@@ -24,13 +24,8 @@ export function rosterErrorMessage(code: RosterValidationError): string {
   }
 }
 
-export function M(n: number | undefined): string {
-  return "$" + Math.round(n || 0).toLocaleString() + "M";
-}
-
-export function M2(n: number | undefined): string {
-  const v = Math.round((n || 0) * 100) / 100;
-  return "$" + v.toLocaleString(undefined, { maximumFractionDigits: 2 }) + "M";
+export function coins(n: number | undefined): string {
+  return (Math.round((n || 0) * 100) / 100).toFixed(2);
 }
 
 export function sanitizeGroupName(raw: string): string {

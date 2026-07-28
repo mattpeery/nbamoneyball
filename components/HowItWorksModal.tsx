@@ -11,25 +11,27 @@ export function HowItWorksModal({ onClose }: { onClose: () => void }) {
 
         <p className="text-[13.5px] text-[#3A3F45] leading-relaxed mb-2">
           <span className="font-semibold text-[#131518]">1.</span> Before the regular season begins (10/20/2026), all
-          players are given $100M to build a roster of NBA teams. Players receive $1M for every game won by each of
-          their roster teams during the &apos;26–&apos;27 regular season. Players who earn more during the regular
-          season will have more money to build their playoff rosters.
+          players are given 200 gold coins to build a roster of NBA teams - each team costs coins equal to its
+          projected win total. Every team you own earns you 1 coin for every game it wins during the
+          &apos;26–&apos;27 regular season. Players who earn more coins during the regular season will have more to
+          build their playoff rosters.
         </p>
         <p className="text-[12.5px] text-[#6B7280] leading-relaxed mb-4 italic">
-          Example: Bill Simmons uses his $100M to buy the Thunder, Warriors, and Celtics. Those teams combine to win
-          152 games, earning Bill $152M, which he will use to build his playoff team.
+          Example: Bill Simmons spends 152.50 of his 200 coins on the Thunder (61.50), Warriors (40.50), and Celtics
+          (50.50), leaving 47.50 coins unspent. Those three teams combine to win 152 games, earning Bill 152 coins,
+          which he will use to build his playoff team.
         </p>
 
         <p className="text-[13.5px] text-[#3A3F45] leading-relaxed mb-2">
           <span className="font-semibold text-[#131518]">2.</span> Before playoffs begin (4/17/2027), players will
-          use the money earned during the regular season to build a playoff roster of NBA playoff teams. Points are
+          use the coins earned during the regular season to build a playoff roster of NBA playoff teams. Points are
           awarded in the playoffs for wins, with increasing value in later rounds. The player whose playoff roster
           accrues the most points is crowned NBA Moneyball Champion.
         </p>
         <p className="text-[12.5px] text-[#6B7280] leading-relaxed italic">
-          Example: Bill Simmons uses the $152M his regular season team earned him to create his playoff team. He buys
-          the Spurs and the Celtics. Bill receives some points for the Spurs, who win 3 games before exiting in the
-          first round, and a lot of points for the Celtics, who reach the NBA Finals. (More details on playoff
+          Example: Bill Simmons uses the 152 coins his regular season team earned him to create his playoff team. He
+          buys the Spurs and the Celtics. Bill receives some points for the Spurs, who win 3 games before exiting in
+          the first round, and a lot of points for the Celtics, who reach the NBA Finals. (More details on playoff
           scoring to come after play-in games conclude in April 2027.)
         </p>
 

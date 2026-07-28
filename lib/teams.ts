@@ -8,15 +8,6 @@ export const WEST = [
 ];
 export const ALL_TEAMS = [...EAST, ...WEST];
 
-// Sourced from the "2026-2027 version" tab (columns A-C) of the team's
-// shared pricing sheet -- derived from Vegas-projected win totals.
-export const DEFAULT_PRICES: Record<string, number> = {
-  Knicks: 30, Celtics: 29, Pistons: 29, Cavaliers: 27, "76ers": 27, Heat: 26, Raptors: 26, Pacers: 25,
-  Magic: 25, Hawks: 24, Hornets: 21, Wizards: 20, Bucks: 15, Bulls: 15, Nets: 11,
-  Thunder: 35, Spurs: 35, Nuggets: 28, Timberwolves: 28, Rockets: 27, Lakers: 25, "Trail Blazers": 25,
-  Warriors: 23, Suns: 22, Jazz: 20, Mavericks: 20, Pelicans: 17, Clippers: 16, Grizzlies: 16, Kings: 13,
-};
-
 // Vegas-projected regular-season win totals, shown alongside price on the
 // draft screen. Static reference data, not derived from anything else.
 export const PROJECTED_WINS: Record<string, number> = {
@@ -28,7 +19,10 @@ export const PROJECTED_WINS: Record<string, number> = {
   Bucks: 26.5, Bulls: 25.5, Nets: 19.5,
 };
 
-export const REG_BUDGET = 100;
+// A team's price in gold coins is exactly its Vegas-projected win total.
+export const DEFAULT_PRICES: Record<string, number> = { ...PROJECTED_WINS };
+
+export const REG_BUDGET = 200;
 export const MIN_TEAMS = 2;
 export const MAX_TEAMS = 10;
 export const ROUND_LABELS = ["Rd 1", "Rd 2", "Conf Finals", "Finals"];

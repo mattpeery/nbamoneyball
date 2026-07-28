@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, ChevronDown } from "lucide-react";
+import { Check, X, ChevronDown, Coins } from "lucide-react";
 import { FULL_NAMES, MAX_TEAMS, MIN_TEAMS } from "@/lib/teams";
-import { M } from "@/lib/format";
+import { coins } from "@/lib/format";
+
+const GOLD = "#D4A017";
 
 export function Section({
   title,
@@ -30,19 +32,17 @@ export function BudgetBar({
   spent,
   total,
   alloc = {},
-  prices = {},
   onRemove,
 }: {
   label: string;
   spent: number;
   total: number;
   alloc?: Record<string, number>;
-  prices?: Record<string, number>;
   onRemove?: (team: string) => void;
 }) {
-  const pct = total > 0 ? Math.min(100, (spent / total) * 100) : 0;
   const remaining = total - spent;
   const over = remaining < 0;
+  const pct = total > 0 ? Math.max(0, Math.min(100, (remaining / total) * 100)) : 0;
   const roster = Object.entries(alloc).filter(([, v]) => v > 0);
   const atCap = roster.length >= MAX_TEAMS;
   return (
@@ -51,12 +51,15 @@ export function BudgetBar({
         <div className="flex items-end justify-between mb-2">
           <div>
             <div className="text-[11.5px] text-[#6B7280]">{label}</div>
-            <div className={`font-display text-[26px] font-bold leading-tight ${over ? "text-[#CC0000]" : "text-[#131518]"}`}>
-              {M(remaining)}
+            <div
+              className={`font-display text-[26px] font-bold leading-tight flex items-center gap-1.5 ${over ? "text-[#CC0000]" : "text-[#131518]"}`}
+            >
+              {coins(remaining)}
+              <Coins size={19} style={{ color: over ? "#CC0000" : GOLD }} />
             </div>
           </div>
           <div className="text-right text-[11.5px] text-[#6B7280]">
-            {M(spent)} of {M(total)} spent
+            {coins(spent)} of {coins(total)} spent
             <br />
             <span className={atCap ? "text-[#CC0000] font-medium" : ""}>
               {roster.length} team{roster.length !== 1 ? "s" : ""} selected (min. {MIN_TEAMS}, max. {MAX_TEAMS})
@@ -65,8 +68,8 @@ export function BudgetBar({
         </div>
         <div className="h-1.5 rounded-full bg-[#E5E7EA] overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all ${over ? "bg-[#CC0000]" : "bg-[#131518]"}`}
-            style={{ width: `${pct}%` }}
+            className="h-full rounded-full transition-all"
+            style={{ width: `${pct}%`, backgroundColor: over ? "#CC0000" : GOLD }}
           />
         </div>
 
@@ -74,26 +77,23 @@ export function BudgetBar({
           <div className="mt-3 pt-3 border-t border-[#ECEEF0]">
             <div className="text-[10px] uppercase tracking-wider text-[#9AA0A6] mb-1.5">My roster</div>
             <div className="flex flex-wrap gap-1.5">
-              {roster.map(([team, dollars]) => {
-                const price = prices[team] || 0;
-                const shares = price > 0 ? dollars / price : 0;
-                return (
-                  <span
-                    key={team}
-                    className="inline-flex items-center gap-1 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-1.5 py-1 text-[11px] text-[#3A3F45]"
-                  >
-                    {team} · {shares.toFixed(2)} shares ({M(dollars)})
-                    {onRemove && (
-                      <button
-                        onClick={() => onRemove(team)}
-                        className="w-3.5 h-3.5 rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
-                      >
-                        <X size={9} />
-                      </button>
-                    )}
-                  </span>
-                );
-              })}
+              {roster.map(([team, dollars]) => (
+                <span
+                  key={team}
+                  className="inline-flex items-center gap-1 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-1.5 py-1 text-[11px] text-[#3A3F45]"
+                >
+                  {team} · {coins(dollars)}
+                  <Coins size={10} style={{ color: GOLD }} />
+                  {onRemove && (
+                    <button
+                      onClick={() => onRemove(team)}
+                      className="w-3.5 h-3.5 rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
+                    >
+                      <X size={9} />
+                    </button>
+                  )}
+                </span>
+              ))}
             </div>
           </div>
         )}
@@ -105,27 +105,24 @@ export function BudgetBar({
 export function TeamCard({
   team,
   price,
-  allocated,
-  onChange,
+  owned,
+  onToggle,
   disabled,
-  atCap,
+  affordable,
   projectedWins,
 }: {
   team: string;
   price: number;
-  allocated: number;
-  onChange: (team: string, value: number) => void;
+  owned: boolean;
+  onToggle: (team: string) => void;
   disabled?: boolean;
-  atCap?: boolean;
+  affordable?: boolean;
   projectedWins?: number;
 }) {
-  const shares = price > 0 ? allocated / price : 0;
-  const active = allocated > 0;
-  const blockedByCap = !active && atCap;
-  const canRemove = !disabled && active;
-  const canAdd = !disabled && !blockedByCap;
+  const canBuy = !disabled && !owned && affordable;
+  const canRemove = !disabled && owned;
   return (
-    <div className={`flex items-center justify-between gap-3 py-3 px-3 border-b border-[#ECEEF0] last:border-b-0 ${active ? "bg-[#FAFAFA]" : ""}`}>
+    <div className={`flex items-center justify-between gap-3 py-3 px-3 border-b border-[#ECEEF0] last:border-b-0 ${owned ? "bg-[#FAFAFA]" : ""}`}>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 flex-wrap">
           <div className="text-[13px] font-medium text-[#131518]">{FULL_NAMES[team] || team}</div>
@@ -135,41 +132,33 @@ export function TeamCard({
             </span>
           )}
         </div>
-        <div className="font-display text-[24px] font-bold text-[#131518] leading-none mt-1">
-          {M(price)}
-          <span className="font-sans text-[11px] font-normal text-[#9AA0A6]"> / share</span>
+        <div className="font-display text-[20px] font-bold text-[#131518] leading-none mt-1.5 flex items-center gap-1">
+          {coins(price)}
+          <Coins size={15} style={{ color: GOLD }} />
         </div>
-        <div className="text-[11.5px] text-[#6B7280] mt-1">{shares.toFixed(2)} shares owned</div>
       </div>
-      <div className="flex items-center gap-1.5 shrink-0">
-        <button
-          disabled={!canRemove}
-          onClick={() => onChange(team, Math.max(0, allocated - 1))}
-          className={`px-2.5 h-7 rounded-full flex items-center justify-center text-[10.5px] font-bold active:scale-90 transition-colors whitespace-nowrap ${
-            canRemove ? "bg-[#CC0000] text-white" : "bg-[#E5E7EA] text-[#AEB2B8]"
-          }`}
-        >
-          -$1M
-        </button>
-        <button
-          disabled={!canAdd}
-          onClick={() => onChange(team, allocated + 1)}
-          className={`px-2.5 h-7 rounded-full flex items-center justify-center text-[10.5px] font-bold active:scale-90 transition-colors whitespace-nowrap ${
-            canAdd ? "bg-[#131518] text-white" : "bg-[#E5E7EA] text-[#AEB2B8]"
-          }`}
-        >
-          +$1M
-        </button>
-        <button
-          disabled={!canAdd}
-          onClick={() => onChange(team, allocated + price)}
-          className={`px-2.5 h-7 rounded-full flex items-center justify-center text-[10.5px] font-bold active:scale-90 transition-colors whitespace-nowrap ${
-            canAdd ? "bg-[#131518] text-white" : "bg-[#E5E7EA] text-[#AEB2B8]"
-          }`}
-        >
-          +1 share
-        </button>
-      </div>
+      <button
+        disabled={owned ? !canRemove : !canBuy}
+        onClick={() => onToggle(team)}
+        className={`shrink-0 flex items-center gap-1.5 px-3.5 h-10 rounded-full justify-center text-[12px] font-bold active:scale-95 transition-colors whitespace-nowrap ${
+          owned
+            ? "bg-[#131518] text-white"
+            : canBuy
+            ? "bg-[#16A34A] text-white"
+            : "bg-[#E5E7EA] text-[#AEB2B8]"
+        }`}
+      >
+        {owned ? (
+          <>
+            <Check size={13} /> Owned
+          </>
+        ) : (
+          <>
+            Buy {team}: {coins(price)}
+            <Coins size={13} />
+          </>
+        )}
+      </button>
     </div>
   );
 }

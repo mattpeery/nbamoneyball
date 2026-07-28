@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "The regular-season draft is locked." }, { status: 423 });
   }
 
-  const validationError = validateRoster(picks, REG_BUDGET, MIN_TEAMS, MAX_TEAMS);
+  const validationError = validateRoster(picks, REG_BUDGET, MIN_TEAMS, MAX_TEAMS, teamdata.regular.prices);
   if (validationError) {
     return NextResponse.json({ error: rosterErrorMessage(validationError) }, { status: 400 });
   }
@@ -46,13 +46,6 @@ export async function POST(req: NextRequest) {
   const spent = Object.values(picks)
     .filter((v) => v > 0)
     .reduce((a, b) => a + b, 0);
-
-  if (spent < REG_BUDGET) {
-    return NextResponse.json(
-      { error: `You need to spend your full $${REG_BUDGET}M budget before submitting - $${REG_BUDGET - spent}M is unallocated.` },
-      { status: 400 }
-    );
-  }
 
   const result = await upsertRegularPlayer(groupId, {
     name,

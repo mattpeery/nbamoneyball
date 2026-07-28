@@ -12,11 +12,11 @@ export function PricingInfoModal({ onClose }: { onClose: () => void }) {
         </h3>
 
         <p className="text-[13.5px] text-[#3A3F45] leading-relaxed mb-3">
-          Teams are priced based on their projected regular season win totals, per Las Vegas (shown as &quot;Projected
-          Wins&quot;).
+          Every team costs gold coins equal to its projected regular season win total, per Las Vegas (shown as
+          &quot;Projected Wins&quot;) - a team projected for 52.5 wins costs 52.50 coins.
         </p>
         <p className="text-[13.5px] text-[#3A3F45] leading-relaxed">
-          Tip: to maximize wins, pick teams that you believe will most exceed their projected win totals.
+          Tip: to earn back the most coins, pick teams you believe will most exceed their projected win totals.
         </p>
 
         <button

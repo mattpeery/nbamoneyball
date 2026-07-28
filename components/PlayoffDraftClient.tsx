@@ -45,21 +45,33 @@ export function PlayoffDraftClient({
     (a, b) => (teamdata.playoff.prices[b] ?? 0) - (teamdata.playoff.prices[a] ?? 0)
   );
 
-  function setTeam(team: string, rawVal: number) {
+  function toggleTeam(team: string) {
+    setMsg(null);
     setAlloc((a) => {
-      const already = (a[team] || 0) > 0;
-      const otherSpent = Object.entries(a).reduce((s, [k, v]) => (k === team ? s : s + v), 0);
-      const maxAllowed = Math.max(0, budget - otherSpent);
-      const val = Math.max(0, Math.min(rawVal, maxAllowed));
-      if (val > 0 && !already && distinctTeams >= MAX_TEAMS) {
+      const owned = (a[team] || 0) > 0;
+      if (owned) {
+        const next = { ...a };
+        delete next[team];
+        return next;
+      }
+      if (distinctTeams >= MAX_TEAMS) {
         setMsg({ tone: "error", text: rosterErrorMessage("too-many-teams") });
         return a;
       }
-      return { ...a, [team]: val };
+      const price = teamdata.playoff.prices[team] || 0;
+      if (price > remaining) {
+        setMsg({ tone: "error", text: "Not enough coins left to buy this team." });
+        return a;
+      }
+      return { ...a, [team]: price };
     });
   }
   function removeTeam(team: string) {
-    setTeam(team, 0);
+    setAlloc((a) => {
+      const next = { ...a };
+      delete next[team];
+      return next;
+    });
   }
 
   function loadMine() {
@@ -75,7 +87,6 @@ export function PlayoffDraftClient({
     if (!myRegular) return setMsg({ tone: "error", text: "No regular-season roster found for that email." });
     if (distinctTeams === 0) return setMsg({ tone: "error", text: rosterErrorMessage("empty") });
     if (distinctTeams < MIN_TEAMS) return setMsg({ tone: "error", text: rosterErrorMessage("too-few-teams") });
-    if (remaining < 0) return setMsg({ tone: "error", text: "Over budget." });
     setShowModal(true);
   }
 
@@ -130,14 +141,7 @@ export function PlayoffDraftClient({
       </div>
       {email.trim() && !myRegular && <Banner tone="error">No regular-season roster found for that email.</Banner>}
       {myRegular && (
-        <BudgetBar
-          label="Playoff budget remaining"
-          spent={spent}
-          total={budget}
-          alloc={alloc}
-          prices={teamdata.playoff.prices}
-          onRemove={removeTeam}
-        />
+        <BudgetBar label="Playoff budget remaining" spent={spent} total={budget} alloc={alloc} onRemove={removeTeam} />
       )}
       {teamdata.playoff.locked && (
         <div className="mt-3">
@@ -157,10 +161,10 @@ export function PlayoffDraftClient({
               key={t}
               team={t}
               price={teamdata.playoff.prices[t]}
-              allocated={alloc[t] || 0}
-              onChange={setTeam}
+              owned={(alloc[t] || 0) > 0}
+              onToggle={toggleTeam}
               disabled={teamdata.playoff.locked || !myRegular}
-              atCap={atCap}
+              affordable={!atCap && remaining >= (teamdata.playoff.prices[t] || 0)}
             />
           ))}
         </div>
