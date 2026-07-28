@@ -95,7 +95,7 @@ export function LandingHero({ regularCount, draftDeadline }: { regularCount: num
         <div className="mt-10 space-y-3">
           {[
             ["1", "Build your regular season roster"],
-            ["2", "Earn points for wins"],
+            ["2", "Earn points for wins during the 2026-2027 NBA regular season"],
             ["3", "Use your points to build a winning playoff roster and become the 2026 NBA Moneyball Champion!"],
           ].map(([n, txt]) => (
             <div key={n} className="flex items-start gap-3">
