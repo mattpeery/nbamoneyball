@@ -35,12 +35,14 @@ export function BudgetBar({
   total,
   alloc = {},
   onRemove,
+  onClearAll,
 }: {
   label: string;
   spent: number;
   total: number;
   alloc?: Record<string, number>;
   onRemove?: (team: string) => void;
+  onClearAll?: () => void;
 }) {
   const remaining = total - spent;
   const over = remaining < 0;
@@ -72,7 +74,14 @@ export function BudgetBar({
 
           {roster.length > 0 && (
             <div className="mt-3 pt-3 border-t border-[#ECEEF0]">
-              <div className="text-[10px] uppercase tracking-wider text-[#9AA0A6] mb-1.5">My roster</div>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="text-[14px] font-semibold text-[#131518]">My roster</div>
+                {onClearAll && (
+                  <button onClick={onClearAll} className="text-[11.5px] text-[#CC0000] font-medium underline decoration-dotted">
+                    Clear all
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {roster.map(([team, dollars]) => (
                   <span
@@ -119,7 +128,7 @@ export function TeamCard({
   const canBuy = !disabled && !owned && affordable;
   const canRemove = !disabled && owned;
 
-  let buttonClass = "border-2 ";
+  let buttonClass = "border ";
   if (owned) {
     buttonClass += "bg-[#131518] border-[#131518] text-white";
   } else if (canBuy) {
@@ -131,15 +140,14 @@ export function TeamCard({
 
   return (
     <div
-      className={`grid grid-cols-[2.1fr_0.95fr_0.8fr_84px] items-center gap-x-1.5 py-2 px-2.5 border-b border-[#ECEEF0] last:border-b-0 ${
+      className={`grid grid-cols-[2fr_1.4fr_84px] items-center gap-x-1.5 py-2 px-2.5 border-b border-[#ECEEF0] last:border-b-0 ${
         owned ? "bg-[#FAFAFA]" : ""
       }`}
     >
       <div className="min-w-0 text-[14px] font-semibold text-[#131518] truncate">{FULL_NAMES[team] || team}</div>
       <div className="min-w-0 text-[12.5px] text-[#6B7280] truncate">
-        {projectedWins !== undefined ? `${projectedWins} W` : ""}
+        {projectedWins !== undefined ? `${projectedWins} projected wins` : ""}
       </div>
-      <div className="min-w-0 text-[12.5px] text-[#3A3F45] truncate">{usd(price)}</div>
       <button
         disabled={owned ? !canRemove : !canBuy}
         onClick={() => onToggle(team)}

@@ -68,6 +68,10 @@ export function PlayoffDraftClient({
       return next;
     });
   }
+  function clearAll() {
+    setMsg(null);
+    setAlloc({});
+  }
 
   function loadMine() {
     if (existing) {
@@ -138,7 +142,7 @@ export function PlayoffDraftClient({
         </div>
       )}
       {myRegular && (
-        <BudgetBar label="Playoff budget remaining" spent={spent} total={budget} alloc={alloc} onRemove={removeTeam} />
+        <BudgetBar label="Playoff budget remaining" spent={spent} total={budget} alloc={alloc} onRemove={removeTeam} onClearAll={clearAll} />
       )}
       {teamdata.playoff.locked && (
         <div className="mt-3 max-w-2xl mx-auto">

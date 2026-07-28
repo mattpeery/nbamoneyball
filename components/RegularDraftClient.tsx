@@ -79,6 +79,10 @@ export function RegularDraftClient({
       return next;
     });
   }
+  function clearAll() {
+    setMsg(null);
+    setAlloc({});
+  }
 
   function doLookup() {
     const found = players.find((p) => p.email && slug(p.email) === slug(lookupEmail || ""));
@@ -178,7 +182,7 @@ export function RegularDraftClient({
           />
         )}
       </div>
-      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} onRemove={removeTeam} />
+      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} onRemove={removeTeam} onClearAll={clearAll} />
 
       {locked && (
         <div className="mt-3 max-w-2xl mx-auto">
