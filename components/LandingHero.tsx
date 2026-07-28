@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Flag } from "lucide-react";
 import { useCountdown } from "@/lib/useCountdown";
 import { AdminGateModal } from "./AdminGateModal";
+import { LoginModal } from "./LoginModal";
 
 function CountUnit({ value, label }: { value: number; label: string }) {
   return (
@@ -15,10 +16,19 @@ function CountUnit({ value, label }: { value: number; label: string }) {
   );
 }
 
-export function LandingHero({ playerCount, draftDeadline }: { playerCount: number; draftDeadline: string }) {
+export function LandingHero({
+  playerCount,
+  draftDeadline,
+  hasHero,
+}: {
+  playerCount: number;
+  draftDeadline: string;
+  hasHero: boolean;
+}) {
   const { d, h, m, s, done } = useCountdown(draftDeadline);
   const [tapCount, setTapCount] = useState(0);
   const [showAdminGate, setShowAdminGate] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function handleTitleTap() {
@@ -47,17 +57,25 @@ export function LandingHero({ playerCount, draftDeadline }: { playerCount: numbe
           >
             NBA Moneyball
           </h1>
-          <p className="font-display text-[19px] font-medium text-[#55595E] mt-2 leading-snug">
-            Who can buy the most wins this 2026-2027 NBA season?
-          </p>
+          <p className="font-display text-[19px] font-medium text-[#55595E] mt-2 leading-snug">How many wins can you buy?</p>
+          {hasHero && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/hero.png" alt="NBA Moneyball" className="mx-auto mt-5 w-48 h-auto" />
+          )}
         </div>
 
         <Link
           href="/draft"
-          className="font-display uppercase tracking-wide mt-8 block w-full py-4 rounded-2xl bg-[#CC0000] text-white text-[15px] font-semibold active:scale-[0.98] transition-transform text-center"
+          className="font-display uppercase tracking-wide mt-7 block w-full py-4 rounded-2xl bg-[#16A34A] text-white text-[16px] font-semibold active:scale-[0.98] transition-transform text-center"
         >
-          Build Your Team
+          Play Now
         </Link>
+        <button
+          onClick={() => setShowLogin(true)}
+          className="font-display uppercase tracking-wide mt-3 block w-full py-3 rounded-2xl bg-white border border-[#DADFE3] text-[#131518] text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
+        >
+          Log In
+        </button>
 
         <div className="mt-8 border border-[#DADFE3] bg-white rounded-2xl px-4 py-5 shadow-sm">
           <div className="text-center text-[11px] text-[#6B7280] uppercase tracking-wide mb-3">
@@ -79,29 +97,15 @@ export function LandingHero({ playerCount, draftDeadline }: { playerCount: numbe
         {playerCount > 0 && (
           <div className="mt-4 text-center text-[12.5px] text-[#6B7280]">
             <span className="text-[#131518] font-semibold">{playerCount}</span>{" "}
-            {playerCount === 1 ? "player has" : "players have"} already drafted
+            {playerCount === 1 ? "player has" : "players have"} made their picks
           </div>
         )}
-
-        <div className="mt-10 space-y-3">
-          {[
-            ["1", "Build your regular season roster and earn points for wins"],
-            ["2", "When you submit, create your account and optionally join a private group"],
-            ["3", "Use your points to build a winning playoff roster and become champion!"],
-          ].map(([n, txt]) => (
-            <div key={n} className="flex items-start gap-3">
-              <div className="shrink-0 w-6 h-6 rounded-full bg-[#CC0000]/10 border border-[#CC0000]/30 text-[#CC0000] text-[11px] font-bold flex items-center justify-center mt-0.5">
-                {n}
-              </div>
-              <div className="text-[13.5px] text-[#3A3F45] leading-snug pt-0.5">{txt}</div>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className="text-center pb-6 text-[11px] text-[#9AA0A6]">Free to play · results update nightly</div>
 
       {showAdminGate && <AdminGateModal onCancel={() => setShowAdminGate(false)} />}
+      {showLogin && <LoginModal onCancel={() => setShowLogin(false)} />}
     </div>
   );
 }

@@ -27,7 +27,14 @@ export default function JoinByNamePage({ params }: { params: { name: string } })
         setBusy(false);
         return;
       }
-      router.push(`/g/${data.groupId}/leaderboard`);
+      try {
+        await fetch("/api/groups/adopt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ groupId: data.groupId }),
+        });
+      } catch {}
+      router.push(`/home?g=${data.groupId}`);
       router.refresh();
     } catch {
       setErr("Couldn't reach the server - check your connection.");

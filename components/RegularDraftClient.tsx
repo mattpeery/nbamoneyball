@@ -1,19 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, ChevronDown } from "lucide-react";
 import { EAST, WEST, REG_BUDGET, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
 import { isRegularDraftOpen } from "@/lib/scoring";
-import { slug, usd, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
+import { slug, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
-import { GroupChoiceModal } from "@/components/GroupChoiceModal";
-import { CreateGroupModal } from "@/components/CreateGroupModal";
-import { JoinGroupModal } from "@/components/JoinGroupModal";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
-import { PricingInfoModal } from "@/components/PricingInfoModal";
 
 type PendingDetails = { name: string; entryName: string; email: string };
 
@@ -41,12 +37,21 @@ export function RegularDraftClient({
   const [confOpen, setConfOpen] = useState({ East: true, West: true });
   const [showModal, setShowModal] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const [showPricingInfo, setShowPricingInfo] = useState(false);
   const [lookupEmail, setLookupEmail] = useState("");
   const [loaded, setLoaded] = useState<{ name?: string; entryName?: string; email?: string; found: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [pendingDetails, setPendingDetails] = useState<PendingDetails | null>(null);
-  const [groupStep, setGroupStep] = useState<"choice" | "create" | "join" | null>(null);
+
+  // Auto-open the How To Play popup the first time someone lands here.
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem("nbamb_howto_seen")) {
+        setShowHowItWorks(true);
+        localStorage.setItem("nbamb_howto_seen", "1");
+      }
+    } catch {
+      // localStorage unavailable (private mode) - skip the auto-popup
+    }
+  }, []);
 
   const open = isRegularDraftOpen(teamdata);
   const locked = !open;
@@ -98,36 +103,24 @@ export function RegularDraftClient({
     setShowModal(true);
   }
 
-  function onDetailsConfirmed(details: PendingDetails) {
-    setShowModal(false);
-    if (groupId === PUBLIC_GROUP_ID) {
-      setPendingDetails(details);
-      setGroupStep("choice");
-    } else {
-      submitRoster(groupId, details);
-    }
-  }
-
-  async function submitRoster(targetGroupId: string, details: PendingDetails, redirectTo?: string) {
+  async function confirmSubmit(details: PendingDetails) {
     setBusy(true);
     try {
       const res = await fetch("/api/players/regular", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId: targetGroupId, ...details, picks: alloc }),
+        body: JSON.stringify({ groupId, ...details, picks: alloc }),
       });
+      setShowModal(false);
       if (res.ok) {
-        setGroupStep(null);
-        setPendingDetails(null);
-        router.push(redirectTo || leaderboardPathFor(targetGroupId));
+        router.push(leaderboardPathFor(groupId));
         router.refresh();
       } else {
         const data = await res.json().catch(() => null);
-        setGroupStep(null);
         setMsg({ tone: "error", text: data?.error || "Couldn't submit - check your connection and try again." });
       }
     } catch {
-      setGroupStep(null);
+      setShowModal(false);
       setMsg({ tone: "error", text: "Couldn't submit - check your connection and try again." });
     } finally {
       setBusy(false);
@@ -135,39 +128,19 @@ export function RegularDraftClient({
   }
 
   return (
-    <div className="pb-28">
+    <div className="pb-32">
       <div className="px-4 pt-6 pb-1 max-w-2xl mx-auto">
-        <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Build Your Roster</h1>
+        <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Pick Your Teams</h1>
         {groupId !== PUBLIC_GROUP_ID && <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>}
-        <ol className="text-[13px] text-[#55595E] leading-snug mt-2 space-y-1.5">
-          <li>1. Spend up to {usd(REG_BUDGET)} buying NBA teams to build your roster.</li>
-          <li>
-            2. During the &apos;26–&apos;27 regular season, each team on your roster earns you $1 for every game it
-            wins.
-          </li>
-          <li>
-            3. You will use what you earn to build your playoff roster in April.{" "}
-            <button
-              onClick={() => setShowHowItWorks(true)}
-              className="text-[#CC0000] font-medium underline decoration-dotted"
-            >
-              More details
-            </button>
-          </li>
-        </ol>
-        <div className="mt-3 inline-flex items-center gap-1.5 text-[11.5px] font-medium text-[#CC0000] bg-[#CC0000]/8 border border-[#CC0000]/25 rounded-full px-3 py-1.5">
-          <Lock size={11} /> Picks lock at tip-off on NBA Opening Day (Oct. 20)
-        </div>
         <button
-          onClick={() => setShowPricingInfo(true)}
-          className="block mt-2.5 text-[12.5px] text-[#CC0000] font-medium underline decoration-dotted"
+          onClick={() => setShowHowItWorks(true)}
+          className="block mt-1.5 mb-2 text-[14px] text-[#CC0000] font-medium underline decoration-dotted"
         >
-          How Does Pricing Work?
+          How To Play
         </button>
       </div>
 
       {showHowItWorks && <HowItWorksModal onClose={() => setShowHowItWorks(false)} />}
-      {showPricingInfo && <PricingInfoModal onClose={() => setShowPricingInfo(false)} />}
 
       <div className="max-w-2xl mx-auto">
         {!preloaded && (
@@ -236,10 +209,11 @@ export function RegularDraftClient({
             <button
               onClick={trySubmit}
               disabled={busy}
-              className="font-display uppercase tracking-wide w-full bg-[#CC0000] text-white font-semibold text-[15px] rounded-xl py-3.5 disabled:opacity-50 active:scale-[0.99]"
+              className="font-display uppercase tracking-wide w-full bg-[#16A34A] text-white font-semibold text-[15px] rounded-xl py-3.5 disabled:opacity-50 active:scale-[0.99]"
             >
-              {busy ? "Submitting…" : "Submit Your Roster"}
+              {busy ? "Submitting…" : "Submit Roster"}
             </button>
+            <p className="text-center text-[11px] text-[#6B7280] mt-1.5">Picks are editable until NBA Opening Day (Oct. 20)</p>
           </div>
         </div>
       )}
@@ -250,35 +224,8 @@ export function RegularDraftClient({
           defaultEntryName={loaded?.entryName || preloaded?.entryName || ""}
           defaultEmail={loaded?.email || preloaded?.email || lookupEmail || initialEmail || ""}
           onCancel={() => setShowModal(false)}
-          onConfirm={onDetailsConfirmed}
+          onConfirm={confirmSubmit}
           busy={busy}
-        />
-      )}
-
-      {groupStep === "choice" && pendingDetails && (
-        <GroupChoiceModal
-          busy={busy}
-          onCancel={() => {
-            setGroupStep(null);
-            setPendingDetails(null);
-          }}
-          onSkip={() => submitRoster(PUBLIC_GROUP_ID, pendingDetails)}
-          onCreate={() => setGroupStep("create")}
-          onJoin={() => setGroupStep("join")}
-        />
-      )}
-
-      {groupStep === "create" && pendingDetails && (
-        <CreateGroupModal
-          onCancel={() => setGroupStep("choice")}
-          onSuccess={(newGroupId) => submitRoster(newGroupId, pendingDetails, `/g/${newGroupId}/invite`)}
-        />
-      )}
-
-      {groupStep === "join" && pendingDetails && (
-        <JoinGroupModal
-          onCancel={() => setGroupStep("choice")}
-          onSuccess={(joinedGroupId) => submitRoster(joinedGroupId, pendingDetails)}
         />
       )}
     </div>

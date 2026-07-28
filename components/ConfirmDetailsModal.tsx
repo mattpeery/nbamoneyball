@@ -33,8 +33,8 @@ export function ConfirmDetailsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-4" onClick={onCancel}>
       <div className="w-full max-w-sm bg-white border border-[#DADFE3] rounded-2xl p-5" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-display uppercase tracking-wide text-[17px] font-semibold text-[#131518] mb-1">Save your roster</h3>
-        <p className="text-[12.5px] text-[#6B7280] mb-4">Enter your details to submit your roster.</p>
+        <h3 className="font-display uppercase tracking-wide text-[17px] font-semibold text-[#131518] mb-1">Save Your Roster</h3>
+        <p className="text-[12.5px] text-[#6B7280] mb-4">Enter your details to submit your roster</p>
 
         <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">Name</label>
         <input
@@ -70,9 +70,9 @@ export function ConfirmDetailsModal({
           <button
             onClick={confirm}
             disabled={busy}
-            className="font-display uppercase tracking-wide flex-1 py-3 rounded-xl bg-[#CC0000] text-white text-[14px] font-semibold disabled:opacity-50 active:scale-[0.98]"
+            className="font-display uppercase tracking-wide flex-1 py-3 rounded-xl bg-[#16A34A] text-white text-[14px] font-semibold disabled:opacity-50 active:scale-[0.98]"
           >
-            {busy ? "Submitting…" : "Confirm & submit"}
+            {busy ? "Submitting…" : "Submit"}
           </button>
         </div>
       </div>

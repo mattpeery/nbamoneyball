@@ -34,5 +34,5 @@ export function draftPathFor(groupId: string): string {
 }
 
 export function leaderboardPathFor(groupId: string): string {
-  return groupId === PUBLIC_GROUP_ID ? "/leaderboard" : `/g/${groupId}/leaderboard`;
+  return groupId === PUBLIC_GROUP_ID ? "/home" : `/home?g=${groupId}`;
 }

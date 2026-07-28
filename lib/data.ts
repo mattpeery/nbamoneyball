@@ -169,6 +169,16 @@ export async function upsertPlayoffPlayer(groupId: string, record: PlayoffPlayer
 export async function countAllPlayers(): Promise<number> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return 0;
-  const { count } = await supabase.from("players").select("id", { count: "exact", head: true });
-  return count || 0;
+  const { data } = await supabase.from("players").select("id");
+  if (!data) return 0;
+  return new Set((data as { id: string }[]).map((r) => r.id)).size;
+}
+
+/** Looks up a roster by email across every group - used by Log In. */
+export async function findRegularPlayerAnyGroup(email: string): Promise<PlayerRecord | null> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return null;
+  const { data } = await supabase.from("players").select("*").eq("id", slug(email)).limit(1);
+  const row = (data as PlayerRow[] | null)?.[0];
+  return row ? rowToPlayer(row) : null;
 }

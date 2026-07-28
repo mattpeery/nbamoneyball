@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check, X, ChevronDown } from "lucide-react";
 import { FULL_NAMES } from "@/lib/teams";
 import { usd } from "@/lib/format";
+import { teamLogoUrl } from "@/lib/logos";
 
 const CASH = "#16A34A";
 
@@ -138,12 +139,19 @@ export function TeamCard({
     buttonClass += "border-[#E5E7EA] text-[#AEB2B8] bg-white";
   }
 
+  const logo = teamLogoUrl(team);
   return (
     <div
-      className={`grid grid-cols-[1fr_84px] items-center gap-x-1.5 py-2 px-2.5 border-b border-[#ECEEF0] last:border-b-0 ${
+      className={`grid grid-cols-[34px_1fr_84px] items-center gap-x-2 py-2 px-2.5 border-b border-[#ECEEF0] last:border-b-0 ${
         owned ? "bg-[#FAFAFA]" : ""
       }`}
     >
+      <div className="w-[34px] h-[34px] flex items-center justify-center shrink-0">
+        {logo && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logo} alt="" className="w-8 h-8 object-contain" loading="lazy" />
+        )}
+      </div>
       <div className="min-w-0">
         <div className="text-[14px] font-semibold text-[#131518] truncate">{FULL_NAMES[team] || team}</div>
         {projectedWins !== undefined && (

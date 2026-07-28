@@ -7,37 +7,34 @@ export function HowItWorksModal({ onClose }: { onClose: () => void }) {
         className="w-full max-w-md bg-white border border-[#DADFE3] rounded-2xl p-5 max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="font-display uppercase tracking-wide text-[17px] font-semibold text-[#131518] mb-3">How it works</h3>
+        <h3 className="font-display uppercase tracking-wide text-[17px] font-semibold text-[#131518] mb-3">How To Play</h3>
 
         <p className="text-[13.5px] text-[#3A3F45] leading-relaxed mb-2">
-          <span className="font-semibold text-[#131518]">1.</span> Before the regular season begins (10/20/2026), all
-          players are given $164 to build a roster of NBA teams - each team costs a dollar amount equal to its
-          projected win total. Every team you own earns you $1 for every game it wins during the &apos;26–&apos;27
-          regular season. Players who earn more during the regular season will have more to build their playoff
-          rosters.
+          <span className="font-semibold text-[#131518]">1.</span> Before Opening Day (Oct. 20), use your $164 budget
+          to pick NBA teams. Your goal is to build a roster of teams that wins the most games during the 2026-2027
+          NBA regular season. Tip: pick teams that you think will beat their projected wins for the best value.
         </p>
         <p className="text-[12.5px] text-[#6B7280] leading-relaxed mb-4 italic">
-          Example: Bill Simmons spends $152.50 of his $164 on the Thunder ($61.50), Warriors ($40.50), and Celtics
-          ($50.50), leaving $11.50 unspent. Those three teams combine to win 152 games, earning Bill $152, which he
-          will use to build his playoff team.
+          Example: Bill Simmons uses his $164 to buy the Thunder, Warriors, and Celtics. Those teams combine to win
+          152 games. Bill will trade in his 152 wins to build his playoff team in April.
         </p>
 
         <p className="text-[13.5px] text-[#3A3F45] leading-relaxed mb-2">
-          <span className="font-semibold text-[#131518]">2.</span> Before playoffs begin (4/17/2027), players will
-          use what they earned during the regular season to build a playoff roster of NBA playoff teams. Points are
-          awarded in the playoffs for wins, with increasing value in later rounds. The player whose playoff roster
-          accrues the most points is crowned NBA Moneyball Champion.
+          <span className="font-semibold text-[#131518]">2.</span> Before NBA Playoffs (4/17/2027), the wins you earn
+          during the regular season will become the currency you use to build your playoff team (i.e., more regular
+          season wins = more spending power to pick your playoff roster). Points are awarded in the playoffs for
+          wins, with increasing value in later rounds. The player whose playoff roster accrues the most points is
+          crowned NBA Moneyball Champion.
         </p>
         <p className="text-[12.5px] text-[#6B7280] leading-relaxed italic">
-          Example: Bill Simmons uses the $152 his regular season team earned him to create his playoff team. He buys
-          the Spurs and the Celtics. Bill receives some points for the Spurs, who win 3 games before exiting in the
-          first round, and a lot of points for the Celtics, who reach the NBA Finals. (More details on playoff
-          scoring to come after play-in games conclude in April 2027.)
+          Example: Bill Simmons trades in his 152 regular season wins to buy shares of the Spurs and Celtics, two
+          playoff teams. He gets points for games won by both teams. Full playoff scoring details will be shared
+          after play-in games conclude in April 2027.
         </p>
 
         <button
           onClick={onClose}
-          className="font-display uppercase tracking-wide w-full mt-5 py-3 rounded-xl bg-[#CC0000] text-white text-[14px] font-semibold active:scale-[0.98] transition-transform"
+          className="font-display uppercase tracking-wide w-full mt-5 py-3 rounded-xl bg-[#16A34A] text-white text-[14px] font-semibold active:scale-[0.98] transition-transform"
         >
           Got it
         </button>

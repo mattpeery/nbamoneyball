@@ -25,6 +25,13 @@ export function GroupPasswordGate({ groupId, groupName }: { groupId: string; gro
         setBusy(false);
         return;
       }
+      try {
+        await fetch("/api/groups/adopt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ groupId }),
+        });
+      } catch {}
       router.refresh();
     } catch {
       setErr("Couldn't reach the server - check your connection.");

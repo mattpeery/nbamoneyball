@@ -31,8 +31,8 @@ export default async function InvitePage({ params }: { params: { groupId: string
         <InviteLinkCard groupName={group.name} />
 
         <Link
-          href={`/g/${group.id}/leaderboard`}
-          className="font-display uppercase tracking-wide block w-full mt-4 py-3 rounded-xl bg-[#CC0000] text-white text-[14px] font-semibold text-center active:scale-[0.98]"
+          href={`/home?g=${group.id}`}
+          className="font-display uppercase tracking-wide block w-full mt-4 py-3 rounded-xl bg-[#16A34A] text-white text-[14px] font-semibold text-center active:scale-[0.98]"
         >
           View Group
         </Link>
