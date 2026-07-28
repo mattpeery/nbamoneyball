@@ -46,3 +46,22 @@ create table if not exists public.playoff_players (
 );
 
 alter table public.playoff_players enable row level security;
+
+-- Regular-season games already pulled from balldontlie.io, keyed by their
+-- game id so re-syncing an overlapping date window is a no-op for games
+-- already recorded. Win totals are recomputed from this table on each sync
+-- rather than incremented, so a corrected final score self-heals too.
+create table if not exists public.synced_games (
+  id integer primary key,
+  date date not null,
+  home_team text not null,
+  away_team text not null,
+  home_score integer not null,
+  away_score integer not null,
+  postseason boolean not null,
+  season integer not null
+);
+
+alter table public.synced_games enable row level security;
+
+create index if not exists synced_games_date_idx on public.synced_games (date);

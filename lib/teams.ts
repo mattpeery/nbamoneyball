@@ -38,6 +38,7 @@ export type RegularTeamData = {
   prices: Record<string, number>;
   wins: Record<string, number>;
   locked: boolean;
+  lastSyncedAt?: string;
 };
 
 export type PlayoffTeamData = {

@@ -17,10 +17,35 @@ export function AdminClient({ teamdata }: { teamdata: TeamData }) {
   const [local, setLocal] = useState<TeamData>(teamdata);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [syncDays, setSyncDays] = useState(3);
+  const [syncBusy, setSyncBusy] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     setLocal(teamdata);
   }, [teamdata]);
+
+  async function syncNow() {
+    setSyncBusy(true);
+    setSyncMsg(null);
+    try {
+      const res = await fetch(`/api/sync-scores?daysBack=${syncDays}`, { method: "POST" });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.ok) {
+        setSyncMsg({
+          tone: "success",
+          text: `Synced ${data.gamesInWindow} game${data.gamesInWindow === 1 ? "" : "s"} from the last ${syncDays} day${syncDays === 1 ? "" : "s"} - ${data.teamsUpdated} team win total${data.teamsUpdated === 1 ? "" : "s"} updated.`,
+        });
+        router.refresh();
+      } else {
+        setSyncMsg({ tone: "error", text: data?.error || "Sync failed - try again." });
+      }
+    } catch {
+      setSyncMsg({ tone: "error", text: "Couldn't reach the server - check your connection." });
+    } finally {
+      setSyncBusy(false);
+    }
+  }
 
   async function save() {
     setBusy(true);
@@ -105,6 +130,35 @@ export function AdminClient({ teamdata }: { teamdata: TeamData }) {
           value={local.regular.locked}
           onChange={(v) => setLocal((l) => ({ ...l, regular: { ...l.regular, locked: v } }))}
         />
+        <div className="px-4 py-3.5 border-b border-[#ECEEF0]">
+          <div className="text-[13.5px] text-[#131518] font-medium">Score sync</div>
+          <div className="text-[11.5px] text-[#6B7280] mt-0.5">
+            Pulls final scores from balldontlie.io and recomputes every team's win total below. Runs automatically
+            once a night; use this to sync sooner or to catch up after a missed run.
+          </div>
+          <div className="text-[11px] text-[#9AA0A6] mt-1.5">
+            Last synced: {local.regular.lastSyncedAt ? new Date(local.regular.lastSyncedAt).toLocaleString() : "Never"}
+          </div>
+          <div className="flex items-center gap-2 mt-2.5">
+            <NumField value={syncDays} onChange={setSyncDays} suffix="days back" width="w-14" />
+            <button
+              onClick={syncNow}
+              disabled={syncBusy}
+              className="flex-1 py-2.5 rounded-xl bg-[#131518] text-white text-[13px] font-semibold disabled:opacity-50"
+            >
+              {syncBusy ? "Syncing…" : "Sync now"}
+            </button>
+          </div>
+          {syncMsg && (
+            <div
+              className={`mt-2.5 text-[12.5px] border rounded-xl px-3.5 py-2.5 ${
+                syncMsg.tone === "error" ? "text-[#CC0000] bg-[#CC0000]/8 border-[#CC0000]/25" : "text-[#3A3F45] bg-[#131518]/5 border-[#DADFE3]"
+              }`}
+            >
+              {syncMsg.text}
+            </div>
+          )}
+        </div>
         <div className="px-4 py-3 text-[11.5px] text-[#6B7280]">
           Price sets what a team costs to draft. Wins is what you update as the season plays out - it drives everyone's
           earnings automatically.

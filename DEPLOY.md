@@ -36,11 +36,13 @@ git push -u origin main
 ## 4. Vercel (hosting)
 
 1. Go to [vercel.com](https://vercel.com) → **Add New → Project** → import the `nba-moneyball` repo. Vercel auto-detects Next.js.
-2. Under **Environment Variables**, add all four from `.env.local`:
+2. Under **Environment Variables**, add all six from `.env.local`:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `ADMIN_PASSCODE`
    - `ADMIN_SESSION_SECRET`
+   - `BALLDONTLIE_API_KEY`
+   - `CRON_SECRET`
 3. Click **Deploy**. You'll get a URL like `nba-moneyball.vercel.app`.
 
 ## After deploying
@@ -50,6 +52,8 @@ git push -u origin main
 - Every `git push` to `main` deploys automatically.
 - Custom domain: Vercel → Project → Settings → Domains.
 
+- **Score sync**: `vercel.json` runs `/api/sync-scores` once nightly (Vercel Cron), pulling the last 3 days of completed regular-season games from balldontlie.io and recomputing win totals. Admin also has a manual "Sync now" button (with a configurable day-count) for catching up after a missed run. Playoff wins-by-round still need to be entered by hand — balldontlie has no way to identify playoff round.
+
 ## Not included in this pass
 
-- Automated win syncing from balldontlie.io — wins are entered by hand in Admin, same as before. A nightly cron route can be added later without touching the rest of the app.
+- Automated **playoff** win syncing — balldontlie's API has no field identifying playoff round (Round 1 vs Conf Finals vs Finals), so wins-by-round stay manual in Admin. Revisit once there's a reliable way to detect rounds.
