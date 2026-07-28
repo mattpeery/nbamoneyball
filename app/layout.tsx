@@ -12,9 +12,24 @@ const inter = Inter({
   variable: "--font-body",
 });
 
+const description = "Who can buy the most wins? Free fantasy game for the 2026-27 NBA season.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://moneyballhoops.com"),
   title: "NBA Moneyball",
-  description: "Who can buy the most wins?",
+  description,
+  openGraph: {
+    title: "NBA Moneyball",
+    description,
+    url: "/",
+    siteName: "NBA Moneyball",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NBA Moneyball",
+    description,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
