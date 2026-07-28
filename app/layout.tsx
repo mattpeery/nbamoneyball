@@ -15,7 +15,7 @@ const inter = Inter({
 const description = "Who can buy the most wins? Free fantasy game for the 2026-27 NBA season.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://moneyballhoops.com"),
+  metadataBase: new URL("https://nbamoneyball.com"),
   title: "NBA Moneyball",
   description,
   openGraph: {
