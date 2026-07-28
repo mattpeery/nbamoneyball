@@ -14,7 +14,7 @@ You need free accounts on **GitHub**, **Supabase**, and **Vercel**.
 
 1. Copy `.env.example` to `.env.local` and fill in `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
 2. Set `ADMIN_PASSCODE` to whatever you want the admin passcode to be.
-3. Generate `ADMIN_SESSION_SECRET`:
+3. Generate `ADMIN_SESSION_SECRET` and `GROUP_SESSION_SECRET` (two separate values):
    ```bash
    openssl rand -hex 32
    ```
@@ -36,11 +36,12 @@ git push -u origin main
 ## 4. Vercel (hosting)
 
 1. Go to [vercel.com](https://vercel.com) → **Add New → Project** → import the `nba-moneyball` repo. Vercel auto-detects Next.js.
-2. Under **Environment Variables**, add all six from `.env.local`:
+2. Under **Environment Variables**, add all seven from `.env.local`:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `ADMIN_PASSCODE`
    - `ADMIN_SESSION_SECRET`
+   - `GROUP_SESSION_SECRET`
    - `BALLDONTLIE_API_KEY`
    - `CRON_SECRET`
 3. Click **Deploy**. You'll get a URL like `nba-moneyball.vercel.app`.
@@ -48,6 +49,7 @@ git push -u origin main
 ## After deploying
 
 - **Admin access**: tap the landing page title 5× within ~2 seconds, enter `ADMIN_PASSCODE`. From there you can set team prices/wins, toggle the game phase, set the playoff field/multipliers, and edit the draft lock deadline — all without a redeploy.
+- **Groups**: everyone drafts inside a password-protected group, created or joined from the homepage (name + password). Prices, wins, phase, and the draft deadline stay global and shared across all groups; only rosters and each group's leaderboard are partitioned.
 - **Draft deadline**: defaults to 2026-10-20 midnight ET. Change it any time from the Admin page.
 - Every `git push` to `main` deploys automatically.
 - Custom domain: Vercel → Project → Settings → Domains.

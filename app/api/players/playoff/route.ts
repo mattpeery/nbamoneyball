@@ -4,13 +4,23 @@ import { isPlayoffDraftOpen, regularEarned, validateRoster } from "@/lib/scoring
 import { ALL_TEAMS, MAX_TEAMS, MIN_TEAMS } from "@/lib/teams";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { rosterErrorMessage } from "@/lib/format";
+import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
+  const groupId = typeof body?.groupId === "string" ? body.groupId : "";
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const entryName = typeof body?.entryName === "string" ? body.entryName.trim() : "";
   const email = typeof body?.email === "string" ? body.email.trim() : "";
   const picks: Record<string, number> = body?.picks && typeof body.picks === "object" ? body.picks : {};
+
+  if (!groupId) {
+    return NextResponse.json({ error: "Missing group." }, { status: 400 });
+  }
+  const groupToken = req.cookies.get(groupCookieName(groupId))?.value;
+  if (!verifyGroupSessionToken(groupId, groupToken)) {
+    return NextResponse.json({ error: "You need to rejoin this group before submitting a roster." }, { status: 401 });
+  }
 
   if (!name || !entryName || !email || !email.includes("@")) {
     return NextResponse.json({ error: "Name, entry name, and a valid email are required." }, { status: 400 });
@@ -28,9 +38,9 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const myRegular = await getRegularPlayerByEmail(email);
+  const myRegular = await getRegularPlayerByEmail(groupId, email);
   if (!myRegular) {
-    return NextResponse.json({ error: "No regular-season roster found for that email." }, { status: 400 });
+    return NextResponse.json({ error: "No regular-season roster found for that email in this group." }, { status: 400 });
   }
   const budget = Math.floor(regularEarned(myRegular, teamdata));
 
@@ -43,7 +53,7 @@ export async function POST(req: NextRequest) {
     .filter((v) => v > 0)
     .reduce((a, b) => a + b, 0);
 
-  const result = await upsertPlayoffPlayer({
+  const result = await upsertPlayoffPlayer(groupId, {
     name,
     entryName,
     email,

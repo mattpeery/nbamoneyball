@@ -16,10 +16,14 @@ export function RegularDraftClient({
   teamdata,
   players,
   initialEmail,
+  groupId,
+  groupName,
 }: {
   teamdata: TeamData;
   players: PlayerRecord[];
   initialEmail?: string;
+  groupId: string;
+  groupName: string;
 }) {
   const router = useRouter();
   const preloaded = useMemo(
@@ -89,11 +93,11 @@ export function RegularDraftClient({
       const res = await fetch("/api/players/regular", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, entryName, email, picks: alloc }),
+        body: JSON.stringify({ groupId, name, entryName, email, picks: alloc }),
       });
       setShowModal(false);
       if (res.ok) {
-        router.push("/leaderboard");
+        router.push(`/g/${groupId}/leaderboard`);
         router.refresh();
       } else {
         const data = await res.json().catch(() => null);
@@ -111,6 +115,7 @@ export function RegularDraftClient({
     <div className="pb-28">
       <div className="px-4 pt-6 pb-1">
         <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Build Your Roster</h1>
+        <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>
         <ol className="text-[13px] text-[#55595E] leading-snug mt-2 space-y-1.5">
           <li>1. Allocate your $100M budget across {MIN_TEAMS}–{MAX_TEAMS} NBA teams to build your roster.</li>
           <li>

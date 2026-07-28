@@ -1,4 +1,6 @@
--- NBA Moneyball schema. Run once in the Supabase SQL editor.
+-- NBA Moneyball schema. Run once in the Supabase SQL editor for a fresh
+-- project. If you already have these tables (players/playoff_players
+-- without group_id), skip to the MIGRATION block at the bottom instead.
 --
 -- No RLS policies are defined on purpose: the app has no per-user auth
 -- model (players are identified only by a low-sensitivity email cookie,
@@ -20,21 +22,36 @@ create table if not exists public.teamdata (
 
 alter table public.teamdata enable row level security;
 
-create table if not exists public.players (
+-- Password-protected groups (leagues). Joined by name + password, not
+-- just a link -- see lib/groups.ts / lib/groupPassword.ts.
+create table if not exists public.groups (
   id text primary key,
+  name text not null,
+  name_normalized text not null unique,
+  password_hash text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.groups enable row level security;
+
+create table if not exists public.players (
+  id text not null,
+  group_id text not null references public.groups(id),
   name text not null,
   entry_name text not null,
   email text not null,
   picks jsonb not null default '{}'::jsonb,
   spent numeric not null default 0,
   price_snapshot jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  primary key (group_id, id)
 );
 
 alter table public.players enable row level security;
 
 create table if not exists public.playoff_players (
-  id text primary key,
+  id text not null,
+  group_id text not null references public.groups(id),
   name text not null,
   entry_name text not null,
   email text not null,
@@ -42,7 +59,8 @@ create table if not exists public.playoff_players (
   spent numeric not null default 0,
   budget numeric not null default 0,
   price_snapshot jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  primary key (group_id, id)
 );
 
 alter table public.playoff_players enable row level security;
@@ -65,3 +83,39 @@ create table if not exists public.synced_games (
 alter table public.synced_games enable row level security;
 
 create index if not exists synced_games_date_idx on public.synced_games (date);
+
+-- ============================================================
+-- MIGRATION: adds groups to an existing NBA Moneyball database
+-- (one that already has players/playoff_players without group_id).
+-- Run this whole block once. Safe to re-run.
+-- ============================================================
+
+create table if not exists public.groups (
+  id text primary key,
+  name text not null,
+  name_normalized text not null unique,
+  password_hash text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.groups enable row level security;
+
+insert into public.groups (id, name, name_normalized, password_hash)
+values (
+  'early-adopters',
+  'Early Adopters',
+  'early adopters',
+  '016f50f5908b5c8c7600edb7dbd47236:90bf0c36cf8035b1884e9267a74f491404f07ac7ac9a7a110389381ba9ca67fbaad1fe35811a9e5099704eac110c81eb458922f7d6aefdaa498d71847425e7b7'
+)
+on conflict (id) do nothing;
+
+alter table public.players add column if not exists group_id text references public.groups(id);
+update public.players set group_id = 'early-adopters' where group_id is null;
+alter table public.players alter column group_id set not null;
+alter table public.players drop constraint if exists players_pkey;
+alter table public.players add primary key (group_id, id);
+
+alter table public.playoff_players add column if not exists group_id text references public.groups(id);
+update public.playoff_players set group_id = 'early-adopters' where group_id is null;
+alter table public.playoff_players alter column group_id set not null;
+alter table public.playoff_players drop constraint if exists playoff_players_pkey;
+alter table public.playoff_players add primary key (group_id, id);

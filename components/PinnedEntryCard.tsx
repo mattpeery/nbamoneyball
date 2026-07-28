@@ -8,11 +8,13 @@ export function PinnedEntryCard({
   rank,
   isPlayoff,
   editable,
+  groupId,
 }: {
   row: LeaderboardRow;
   rank: number;
   isPlayoff: boolean;
   editable: boolean;
+  groupId: string;
 }) {
   return (
     <div className="mx-4 mt-4 bg-white border border-[#CC0000]/30 rounded-2xl overflow-hidden">
@@ -36,7 +38,7 @@ export function PinnedEntryCard({
       <div className="border-t border-[#ECEEF0] px-4 py-3">
         {editable ? (
           <Link
-            href="/draft"
+            href={`/g/${groupId}/draft`}
             className="font-display uppercase tracking-wide block w-full text-center py-2.5 rounded-xl bg-[#CC0000] text-white text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
           >
             Edit roster

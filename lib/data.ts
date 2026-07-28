@@ -59,6 +59,7 @@ export async function saveTeamData(next: TeamData): Promise<SaveResult> {
 
 type PlayerRow = {
   id: string;
+  group_id: string;
   name: string;
   entry_name: string;
   email: string;
@@ -85,65 +86,89 @@ function rowToPlayoffPlayer(row: PlayerRow): PlayoffPlayerRecord {
   return { ...rowToPlayer(row), budget: Number(row.budget) || 0 };
 }
 
-export async function getRegularPlayers(): Promise<PlayerRecord[]> {
+export async function getRegularPlayers(groupId: string): Promise<PlayerRecord[]> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return [];
-  const { data } = await supabase.from("players").select("*").order("updated_at", { ascending: false });
+  const { data } = await supabase.from("players").select("*").eq("group_id", groupId).order("updated_at", { ascending: false });
   return (data as PlayerRow[] | null)?.map(rowToPlayer) || [];
 }
 
-export async function getPlayoffPlayers(): Promise<PlayoffPlayerRecord[]> {
+export async function getPlayoffPlayers(groupId: string): Promise<PlayoffPlayerRecord[]> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return [];
-  const { data } = await supabase.from("playoff_players").select("*").order("updated_at", { ascending: false });
+  const { data } = await supabase
+    .from("playoff_players")
+    .select("*")
+    .eq("group_id", groupId)
+    .order("updated_at", { ascending: false });
   return (data as PlayerRow[] | null)?.map(rowToPlayoffPlayer) || [];
 }
 
-export async function getRegularPlayerByEmail(email: string): Promise<PlayerRecord | null> {
+export async function getRegularPlayerByEmail(groupId: string, email: string): Promise<PlayerRecord | null> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return null;
-  const { data } = await supabase.from("players").select("*").eq("id", slug(email)).maybeSingle();
+  const { data } = await supabase.from("players").select("*").eq("group_id", groupId).eq("id", slug(email)).maybeSingle();
   return data ? rowToPlayer(data as PlayerRow) : null;
 }
 
-export async function getPlayoffPlayerByEmail(email: string): Promise<PlayoffPlayerRecord | null> {
+export async function getPlayoffPlayerByEmail(groupId: string, email: string): Promise<PlayoffPlayerRecord | null> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return null;
-  const { data } = await supabase.from("playoff_players").select("*").eq("id", slug(email)).maybeSingle();
+  const { data } = await supabase
+    .from("playoff_players")
+    .select("*")
+    .eq("group_id", groupId)
+    .eq("id", slug(email))
+    .maybeSingle();
   return data ? rowToPlayoffPlayer(data as PlayerRow) : null;
 }
 
-export async function upsertRegularPlayer(record: PlayerRecord): Promise<SaveResult> {
+export async function upsertRegularPlayer(groupId: string, record: PlayerRecord): Promise<SaveResult> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return { ok: false, error: "Database isn't configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are unset)." };
-  const { error } = await supabase.from("players").upsert({
-    id: slug(record.email),
-    name: record.name,
-    entry_name: record.entryName,
-    email: record.email,
-    picks: record.picks,
-    spent: record.spent,
-    price_snapshot: record.priceSnapshot,
-    updated_at: new Date().toISOString(),
-  });
+  const { error } = await supabase.from("players").upsert(
+    {
+      id: slug(record.email),
+      group_id: groupId,
+      name: record.name,
+      entry_name: record.entryName,
+      email: record.email,
+      picks: record.picks,
+      spent: record.spent,
+      price_snapshot: record.priceSnapshot,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "group_id,id" }
+  );
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
 
-export async function upsertPlayoffPlayer(record: PlayoffPlayerRecord): Promise<SaveResult> {
+export async function upsertPlayoffPlayer(groupId: string, record: PlayoffPlayerRecord): Promise<SaveResult> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return { ok: false, error: "Database isn't configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are unset)." };
-  const { error } = await supabase.from("playoff_players").upsert({
-    id: slug(record.email),
-    name: record.name,
-    entry_name: record.entryName,
-    email: record.email,
-    picks: record.picks,
-    spent: record.spent,
-    budget: record.budget,
-    price_snapshot: record.priceSnapshot,
-    updated_at: new Date().toISOString(),
-  });
+  const { error } = await supabase.from("playoff_players").upsert(
+    {
+      id: slug(record.email),
+      group_id: groupId,
+      name: record.name,
+      entry_name: record.entryName,
+      email: record.email,
+      picks: record.picks,
+      spent: record.spent,
+      budget: record.budget,
+      price_snapshot: record.priceSnapshot,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "group_id,id" }
+  );
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+export async function countAllPlayers(): Promise<number> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return 0;
+  const { count } = await supabase.from("players").select("id", { count: "exact", head: true });
+  return count || 0;
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
 import { Flag } from "lucide-react";
 import { useCountdown } from "@/lib/useCountdown";
 import { AdminGateModal } from "./AdminGateModal";
-import { LoginModal } from "./LoginModal";
+import { CreateGroupModal } from "./CreateGroupModal";
+import { JoinGroupModal } from "./JoinGroupModal";
 
 function CountUnit({ value, label }: { value: number; label: string }) {
   return (
@@ -16,11 +16,12 @@ function CountUnit({ value, label }: { value: number; label: string }) {
   );
 }
 
-export function LandingHero({ regularCount, draftDeadline }: { regularCount: number; draftDeadline: string }) {
+export function LandingHero({ playerCount, draftDeadline }: { playerCount: number; draftDeadline: string }) {
   const { d, h, m, s, done } = useCountdown(draftDeadline);
   const [tapCount, setTapCount] = useState(0);
   const [showAdminGate, setShowAdminGate] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function handleTitleTap() {
@@ -54,19 +55,20 @@ export function LandingHero({ regularCount, draftDeadline }: { regularCount: num
           </p>
         </div>
 
-        <Link
-          href="/draft"
-          className="font-display uppercase tracking-wide mt-8 w-full py-4 rounded-2xl bg-[#CC0000] text-white text-[16px] font-semibold active:scale-[0.98] transition-transform text-center"
-        >
-          Build Your Team
-        </Link>
-
-        <button
-          onClick={() => setShowLogin(true)}
-          className="font-display uppercase tracking-wide mt-3 w-full py-3 rounded-2xl bg-white border border-[#DADFE3] text-[#131518] text-[14px] font-medium active:scale-[0.98] transition-transform"
-        >
-          Log In
-        </button>
+        <div className="mt-8 flex gap-3">
+          <button
+            onClick={() => setShowCreate(true)}
+            className="font-display uppercase tracking-wide flex-1 py-4 rounded-2xl bg-[#CC0000] text-white text-[15px] font-semibold active:scale-[0.98] transition-transform text-center"
+          >
+            Create a Group
+          </button>
+          <button
+            onClick={() => setShowJoin(true)}
+            className="font-display uppercase tracking-wide flex-1 py-4 rounded-2xl bg-white border border-[#DADFE3] text-[#131518] text-[15px] font-semibold active:scale-[0.98] transition-transform"
+          >
+            Join a Group
+          </button>
+        </div>
 
         <div className="mt-8 border border-[#DADFE3] bg-white rounded-2xl px-4 py-5 shadow-sm">
           <div className="text-center text-[11px] text-[#6B7280] uppercase tracking-wide mb-3">
@@ -85,18 +87,18 @@ export function LandingHero({ regularCount, draftDeadline }: { regularCount: num
           )}
         </div>
 
-        {regularCount > 0 && (
+        {playerCount > 0 && (
           <div className="mt-4 text-center text-[12.5px] text-[#6B7280]">
-            <span className="text-[#131518] font-semibold">{regularCount}</span>{" "}
-            {regularCount === 1 ? "player has" : "players have"} already drafted
+            <span className="text-[#131518] font-semibold">{playerCount}</span>{" "}
+            {playerCount === 1 ? "player has" : "players have"} already drafted
           </div>
         )}
 
         <div className="mt-10 space-y-3">
           {[
-            ["1", "Build your regular season roster"],
-            ["2", "Earn points for wins during the 2026-2027 NBA regular season"],
-            ["3", "Use your points to build a winning playoff roster and become the 2026 NBA Moneyball Champion!"],
+            ["1", "Create or join a group with a name and password"],
+            ["2", "Build your regular season roster and earn points for wins"],
+            ["3", "Use your points to build a winning playoff roster and become your group's champion!"],
           ].map(([n, txt]) => (
             <div key={n} className="flex items-start gap-3">
               <div className="shrink-0 w-6 h-6 rounded-full bg-[#CC0000]/10 border border-[#CC0000]/30 text-[#CC0000] text-[11px] font-bold flex items-center justify-center mt-0.5">
@@ -111,7 +113,8 @@ export function LandingHero({ regularCount, draftDeadline }: { regularCount: num
       <div className="text-center pb-6 text-[11px] text-[#9AA0A6]">Free to play · results update nightly</div>
 
       {showAdminGate && <AdminGateModal onCancel={() => setShowAdminGate(false)} />}
-      {showLogin && <LoginModal onCancel={() => setShowLogin(false)} />}
+      {showCreate && <CreateGroupModal onCancel={() => setShowCreate(false)} />}
+      {showJoin && <JoinGroupModal onCancel={() => setShowJoin(false)} />}
     </div>
   );
 }
