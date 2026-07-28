@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, ChevronDown, Banknote } from "lucide-react";
+import { Check, X, ChevronDown } from "lucide-react";
 import { FULL_NAMES } from "@/lib/teams";
-import { coins } from "@/lib/format";
+import { usd } from "@/lib/format";
 
 const CASH = "#16A34A";
 
@@ -18,11 +18,13 @@ export function Section({
 }) {
   return (
     <div className="mt-6 first:mt-4">
-      <div className="flex items-center justify-between px-4 mb-2">
-        <h2 className="font-display uppercase tracking-wide text-[13px] font-semibold text-[#131518]">{title}</h2>
-        {right}
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-between px-4 mb-2">
+          <h2 className="font-display uppercase tracking-wide text-[13px] font-semibold text-[#131518]">{title}</h2>
+          {right}
+        </div>
+        {children}
       </div>
-      {children}
     </div>
   );
 }
@@ -46,54 +48,52 @@ export function BudgetBar({
   const roster = Object.entries(alloc).filter(([, v]) => v > 0);
   return (
     <div className="sticky top-0 z-30 bg-[#F4F5F6] px-4 pt-2 pb-3 border-b border-[#DADFE3]">
-      <div className="bg-white border border-[#DADFE3] rounded-2xl px-4 py-3.5 shadow-sm">
-        <div className="flex items-end justify-between mb-2">
-          <div>
-            <div className="text-[11.5px] text-[#6B7280]">{label}</div>
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white border border-[#DADFE3] rounded-2xl px-4 py-3.5 shadow-sm">
+          <div className="flex items-end justify-between mb-2">
+            <div>
+              <div className="text-[11.5px] text-[#6B7280]">{label}</div>
+              <div className={`font-display text-[26px] font-bold leading-tight ${over ? "text-[#CC0000]" : "text-[#131518]"}`}>
+                {usd(remaining)}
+              </div>
+            </div>
+            <div className="text-right text-[11.5px] text-[#6B7280]">
+              {usd(spent)} of {usd(total)} spent
+              <br />
+              {roster.length} team{roster.length !== 1 ? "s" : ""} selected
+            </div>
+          </div>
+          <div className="h-1.5 rounded-full bg-[#E5E7EA] overflow-hidden">
             <div
-              className={`font-display text-[26px] font-bold leading-tight flex items-center gap-1.5 ${over ? "text-[#CC0000]" : "text-[#131518]"}`}
-            >
-              {coins(remaining)}
-              <Banknote size={19} style={{ color: over ? "#CC0000" : CASH }} />
-            </div>
+              className="h-full rounded-full transition-all"
+              style={{ width: `${pct}%`, backgroundColor: over ? "#CC0000" : CASH }}
+            />
           </div>
-          <div className="text-right text-[11.5px] text-[#6B7280]">
-            {coins(spent)} of {coins(total)} spent
-            <br />
-            {roster.length} team{roster.length !== 1 ? "s" : ""} selected
-          </div>
-        </div>
-        <div className="h-1.5 rounded-full bg-[#E5E7EA] overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all"
-            style={{ width: `${pct}%`, backgroundColor: over ? "#CC0000" : CASH }}
-          />
-        </div>
 
-        {roster.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-[#ECEEF0]">
-            <div className="text-[10px] uppercase tracking-wider text-[#9AA0A6] mb-1.5">My roster</div>
-            <div className="flex flex-wrap gap-1.5">
-              {roster.map(([team, dollars]) => (
-                <span
-                  key={team}
-                  className="inline-flex items-center gap-1 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-1.5 py-1 text-[11px] text-[#3A3F45]"
-                >
-                  {team} · {coins(dollars)}
-                  <Banknote size={10} style={{ color: CASH }} />
-                  {onRemove && (
-                    <button
-                      onClick={() => onRemove(team)}
-                      className="w-3.5 h-3.5 rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
-                    >
-                      <X size={9} />
-                    </button>
-                  )}
-                </span>
-              ))}
+          {roster.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-[#ECEEF0]">
+              <div className="text-[10px] uppercase tracking-wider text-[#9AA0A6] mb-1.5">My roster</div>
+              <div className="flex flex-wrap gap-1.5">
+                {roster.map(([team, dollars]) => (
+                  <span
+                    key={team}
+                    className="inline-flex items-center gap-1 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-1.5 py-1 text-[11px] text-[#3A3F45]"
+                  >
+                    {team} · {usd(dollars)}
+                    {onRemove && (
+                      <button
+                        onClick={() => onRemove(team)}
+                        className="w-3.5 h-3.5 rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
+                      >
+                        <X size={9} />
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -118,34 +118,39 @@ export function TeamCard({
 }) {
   const canBuy = !disabled && !owned && affordable;
   const canRemove = !disabled && owned;
+
+  let buttonClass = "border-2 ";
+  if (owned) {
+    buttonClass += "bg-[#131518] border-[#131518] text-white";
+  } else if (canBuy) {
+    buttonClass +=
+      "border-[#16A34A] text-[#16A34A] bg-white hover:bg-[#16A34A] hover:text-white active:bg-[#16A34A] active:text-white";
+  } else {
+    buttonClass += "border-[#E5E7EA] text-[#AEB2B8] bg-white";
+  }
+
   return (
-    <div className={`flex items-center justify-between gap-3 py-3 px-3 border-b border-[#ECEEF0] last:border-b-0 ${owned ? "bg-[#FAFAFA]" : ""}`}>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2 flex-wrap">
-          <div className="text-[13px] font-medium text-[#131518]">{FULL_NAMES[team] || team}</div>
-          {projectedWins !== undefined && <div className="text-[13px] text-[#6B7280]">{projectedWins} projected wins</div>}
-        </div>
+    <div
+      className={`grid grid-cols-[2.1fr_0.95fr_0.8fr_84px] items-center gap-x-1.5 py-2 px-2.5 border-b border-[#ECEEF0] last:border-b-0 ${
+        owned ? "bg-[#FAFAFA]" : ""
+      }`}
+    >
+      <div className="min-w-0 text-[14px] font-semibold text-[#131518] truncate">{FULL_NAMES[team] || team}</div>
+      <div className="min-w-0 text-[12.5px] text-[#6B7280] truncate">
+        {projectedWins !== undefined ? `${projectedWins} W` : ""}
       </div>
+      <div className="min-w-0 text-[12.5px] text-[#3A3F45] truncate">{usd(price)}</div>
       <button
         disabled={owned ? !canRemove : !canBuy}
         onClick={() => onToggle(team)}
-        className={`shrink-0 flex items-center gap-1.5 px-3.5 h-10 rounded-full justify-center text-[12px] font-bold active:scale-95 transition-colors whitespace-nowrap ${
-          owned
-            ? "bg-[#131518] text-white"
-            : canBuy
-            ? "bg-[#16A34A] text-white"
-            : "bg-[#E5E7EA] text-[#AEB2B8]"
-        }`}
+        className={`w-[84px] h-8 rounded-full flex items-center justify-center text-[10.5px] font-bold active:scale-95 transition-colors whitespace-nowrap ${buttonClass}`}
       >
         {owned ? (
           <>
-            <Check size={13} /> Owned
+            <Check size={11} className="mr-1" /> Owned
           </>
         ) : (
-          <>
-            Buy {team}: {coins(price)}
-            <Banknote size={13} />
-          </>
+          `Buy: ${usd(price)}`
         )}
       </button>
     </div>

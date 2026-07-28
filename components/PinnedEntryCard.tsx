@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Pin, Lock, Banknote } from "lucide-react";
+import { Pin, Lock } from "lucide-react";
 import type { LeaderboardRow } from "@/lib/leaderboard";
-import { coins, draftPathFor } from "@/lib/format";
+import { usd, draftPathFor } from "@/lib/format";
 
 export function PinnedEntryCard({
   row,
@@ -31,9 +31,8 @@ export function PinnedEntryCard({
           </div>
         </div>
         <div className="text-right">
-          <div className="font-display text-[19px] font-bold text-[#131518] flex items-center gap-1 justify-end">
-            {isPlayoff ? row.score.toFixed(1) : coins(row.score)}
-            {!isPlayoff && <Banknote size={15} className="text-[#16A34A]" />}
+          <div className="font-display text-[19px] font-bold text-[#131518]">
+            {isPlayoff ? row.score.toFixed(1) : usd(row.score)}
           </div>
           <div className="text-[10px] text-[#6B7280]">{row.unit}</div>
         </div>

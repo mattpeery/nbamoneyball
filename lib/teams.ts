@@ -19,10 +19,10 @@ export const PROJECTED_WINS: Record<string, number> = {
   Bucks: 26.5, Bulls: 25.5, Nets: 19.5,
 };
 
-// A team's price in gold coins is exactly its Vegas-projected win total.
+// A team's price in dollars is exactly its Vegas-projected win total.
 export const DEFAULT_PRICES: Record<string, number> = { ...PROJECTED_WINS };
 
-export const REG_BUDGET = 150;
+export const REG_BUDGET = 164;
 export const ROUND_LABELS = ["Rd 1", "Rd 2", "Conf Finals", "Finals"];
 export const DEFAULT_MULTIPLIERS = [1, 2, 3, 4];
 export const DEFAULT_DRAFT_DEADLINE = "2026-10-20T00:00:00-04:00";

@@ -55,7 +55,7 @@ export function PlayoffDraftClient({
       }
       const price = teamdata.playoff.prices[team] || 0;
       if (price > remaining) {
-        setMsg({ tone: "error", text: "Not enough coins left to buy this team." });
+        setMsg({ tone: "error", text: "Not enough budget left to buy this team." });
         return a;
       }
       return { ...a, [team]: price };
@@ -110,14 +110,14 @@ export function PlayoffDraftClient({
 
   return (
     <div className="pb-28">
-      <div className="px-4 pt-6 pb-1">
+      <div className="px-4 pt-6 pb-1 max-w-2xl mx-auto">
         <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Build Your Playoff Roster</h1>
         {groupId !== PUBLIC_GROUP_ID && <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>}
         <p className="text-[13px] text-[#55595E] leading-snug mt-1.5">
           Your budget is what you earned in the regular season. Playoff wins are worth more each round.
         </p>
       </div>
-      <div className="px-4 mb-3">
+      <div className="px-4 mb-3 max-w-2xl mx-auto">
         <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">Email used in the regular season</label>
         <input
           value={email}
@@ -132,12 +132,16 @@ export function PlayoffDraftClient({
           </button>
         )}
       </div>
-      {email.trim() && !myRegular && <Banner tone="error">No regular-season roster found for that email.</Banner>}
+      {email.trim() && !myRegular && (
+        <div className="max-w-2xl mx-auto">
+          <Banner tone="error">No regular-season roster found for that email.</Banner>
+        </div>
+      )}
       {myRegular && (
         <BudgetBar label="Playoff budget remaining" spent={spent} total={budget} alloc={alloc} onRemove={removeTeam} />
       )}
       {teamdata.playoff.locked && (
-        <div className="mt-3">
+        <div className="mt-3 max-w-2xl mx-auto">
           <Banner>
             <Lock size={13} /> Playoff draft is locked - picks are view-only.
           </Banner>
@@ -165,19 +169,21 @@ export function PlayoffDraftClient({
 
       {!teamdata.playoff.locked && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#DADFE3] p-3.5">
-          {msg && (
-            <Banner tone={msg.tone}>
-              {msg.tone === "error" ? <X size={13} /> : <Check size={13} />}
-              {msg.text}
-            </Banner>
-          )}
-          <button
-            onClick={trySubmit}
-            disabled={busy || !myRegular}
-            className="font-display uppercase tracking-wide w-full bg-[#CC0000] text-white font-semibold text-[15px] rounded-xl py-3.5 disabled:opacity-50 active:scale-[0.99]"
-          >
-            {busy ? "Submitting…" : "Submit Your Roster"}
-          </button>
+          <div className="max-w-2xl mx-auto">
+            {msg && (
+              <Banner tone={msg.tone}>
+                {msg.tone === "error" ? <X size={13} /> : <Check size={13} />}
+                {msg.text}
+              </Banner>
+            )}
+            <button
+              onClick={trySubmit}
+              disabled={busy || !myRegular}
+              className="font-display uppercase tracking-wide w-full bg-[#CC0000] text-white font-semibold text-[15px] rounded-xl py-3.5 disabled:opacity-50 active:scale-[0.99]"
+            >
+              {busy ? "Submitting…" : "Submit Your Roster"}
+            </button>
+          </div>
         </div>
       )}
 

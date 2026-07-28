@@ -6,7 +6,7 @@ import { Lock, ChevronDown } from "lucide-react";
 import { EAST, WEST, REG_BUDGET, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
 import { isRegularDraftOpen } from "@/lib/scoring";
-import { slug, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
+import { slug, usd, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 import { GroupChoiceModal } from "@/components/GroupChoiceModal";
@@ -66,7 +66,7 @@ export function RegularDraftClient({
       }
       const price = teamdata.regular.prices[team] || 0;
       if (price > remaining) {
-        setMsg({ tone: "error", text: "Not enough coins left to buy this team." });
+        setMsg({ tone: "error", text: "Not enough budget left to buy this team." });
         return a;
       }
       return { ...a, [team]: price };
@@ -132,17 +132,17 @@ export function RegularDraftClient({
 
   return (
     <div className="pb-28">
-      <div className="px-4 pt-6 pb-1">
+      <div className="px-4 pt-6 pb-1 max-w-2xl mx-auto">
         <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Build Your Roster</h1>
         {groupId !== PUBLIC_GROUP_ID && <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>}
         <ol className="text-[13px] text-[#55595E] leading-snug mt-2 space-y-1.5">
-          <li>1. Spend up to {REG_BUDGET} gold coins buying NBA teams to build your roster.</li>
+          <li>1. Spend up to {usd(REG_BUDGET)} buying NBA teams to build your roster.</li>
           <li>
-            2. During the &apos;26–&apos;27 regular season, each team on your roster earns you 1 coin for every game
-            it wins.
+            2. During the &apos;26–&apos;27 regular season, each team on your roster earns you $1 for every game it
+            wins.
           </li>
           <li>
-            3. You will use the coins you earn to build your playoff roster in April.{" "}
+            3. You will use what you earn to build your playoff roster in April.{" "}
             <button
               onClick={() => setShowHowItWorks(true)}
               className="text-[#CC0000] font-medium underline decoration-dotted"
@@ -165,21 +165,23 @@ export function RegularDraftClient({
       {showHowItWorks && <HowItWorksModal onClose={() => setShowHowItWorks(false)} />}
       {showPricingInfo && <PricingInfoModal onClose={() => setShowPricingInfo(false)} />}
 
-      {!preloaded && (
-        <LoadLookup
-          label="Your email"
-          value={lookupEmail}
-          setValue={setLookupEmail}
-          onLoad={doLookup}
-          found={loaded?.found}
-          foundMsg="Roster loaded - make changes and submit again to update it."
-          notFoundMsg="No roster found for that email."
-        />
-      )}
+      <div className="max-w-2xl mx-auto">
+        {!preloaded && (
+          <LoadLookup
+            label="Your email"
+            value={lookupEmail}
+            setValue={setLookupEmail}
+            onLoad={doLookup}
+            found={loaded?.found}
+            foundMsg="Roster loaded - make changes and submit again to update it."
+            notFoundMsg="No roster found for that email."
+          />
+        )}
+      </div>
       <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} onRemove={removeTeam} />
 
       {locked && (
-        <div className="mt-3">
+        <div className="mt-3 max-w-2xl mx-auto">
           <Banner>
             <Lock size={13} /> Draft is locked - picks are view-only.
           </Banner>
@@ -220,19 +222,21 @@ export function RegularDraftClient({
 
       {!locked && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#DADFE3] p-3.5">
-          {msg && (
-            <Banner tone={msg.tone}>
-              {msg.tone === "error" ? <X size={13} /> : <Check size={13} />}
-              {msg.text}
-            </Banner>
-          )}
-          <button
-            onClick={trySubmit}
-            disabled={busy}
-            className="font-display uppercase tracking-wide w-full bg-[#CC0000] text-white font-semibold text-[15px] rounded-xl py-3.5 disabled:opacity-50 active:scale-[0.99]"
-          >
-            {busy ? "Submitting…" : "Submit Your Roster"}
-          </button>
+          <div className="max-w-2xl mx-auto">
+            {msg && (
+              <Banner tone={msg.tone}>
+                {msg.tone === "error" ? <X size={13} /> : <Check size={13} />}
+                {msg.text}
+              </Banner>
+            )}
+            <button
+              onClick={trySubmit}
+              disabled={busy}
+              className="font-display uppercase tracking-wide w-full bg-[#CC0000] text-white font-semibold text-[15px] rounded-xl py-3.5 disabled:opacity-50 active:scale-[0.99]"
+            >
+              {busy ? "Submitting…" : "Submit Your Roster"}
+            </button>
+          </div>
         </div>
       )}
 

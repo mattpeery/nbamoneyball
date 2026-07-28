@@ -19,8 +19,8 @@ export function rosterErrorMessage(code: RosterValidationError): string {
   }
 }
 
-export function coins(n: number | undefined): string {
-  return (Math.round((n || 0) * 100) / 100).toFixed(2);
+export function usd(n: number | undefined): string {
+  return "$" + (Math.round((n || 0) * 100) / 100).toFixed(2);
 }
 
 export function sanitizeGroupName(raw: string): string {

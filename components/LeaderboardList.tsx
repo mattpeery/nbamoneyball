@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, Trophy, Banknote } from "lucide-react";
+import { ChevronRight, Trophy } from "lucide-react";
 import type { LeaderboardRow } from "@/lib/leaderboard";
-import { coins } from "@/lib/format";
+import { usd } from "@/lib/format";
 
 export function LeaderboardList({ rows, isPlayoff }: { rows: LeaderboardRow[]; isPlayoff: boolean }) {
   const [open, setOpen] = useState<number | null>(null);
@@ -37,9 +37,8 @@ export function LeaderboardList({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
               </div>
             </div>
             <div className="text-right">
-              <div className="font-display text-[17px] font-bold text-[#131518] flex items-center gap-1 justify-end">
-                {isPlayoff ? r.score.toFixed(1) : coins(r.score)}
-                {!isPlayoff && <Banknote size={13} className="text-[#16A34A]" />}
+              <div className="font-display text-[17px] font-bold text-[#131518]">
+                {isPlayoff ? r.score.toFixed(1) : usd(r.score)}
               </div>
               <div className="text-[10px] text-[#6B7280]">{r.unit}</div>
             </div>
@@ -51,9 +50,8 @@ export function LeaderboardList({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
                 <div key={b.team} className="flex items-center justify-between px-4 py-2.5 border-b border-[#ECEEF0] last:border-b-0 text-[13px]">
                   <span className="text-[#3A3F45]">{b.team}</span>
                   <span className="text-[#6B7280] text-[12px]">{b.stat}</span>
-                  <span className="text-[#131518] font-medium w-16 text-right flex items-center justify-end gap-0.5">
-                    {isPlayoff ? b.contrib.toFixed(1) + " pt" : coins(b.contrib)}
-                    {!isPlayoff && <Banknote size={11} className="text-[#16A34A]" />}
+                  <span className="text-[#131518] font-medium w-16 text-right">
+                    {isPlayoff ? b.contrib.toFixed(1) + " pt" : usd(b.contrib)}
                   </span>
                 </div>
               ))}

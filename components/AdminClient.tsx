@@ -160,7 +160,7 @@ export function AdminClient({ teamdata }: { teamdata: TeamData }) {
           )}
         </div>
         <div className="px-4 py-3 text-[11.5px] text-[#6B7280]">
-          Price (in gold coins) sets what a team costs to draft. Wins is what you update as the season plays out - it
+          Price (in dollars) sets what a team costs to draft. Wins is what you update as the season plays out - it
           drives everyone's earnings automatically.
         </div>
         {ALL_TEAMS.map((t) => (
@@ -168,7 +168,7 @@ export function AdminClient({ teamdata }: { teamdata: TeamData }) {
             <span className="flex-1 text-[13px] text-[#131518] truncate">{t}</span>
             <NumField
               value={local.regular.prices[t] ?? 0}
-              suffix="coins"
+              suffix="$"
               onChange={(v) => setLocal((l) => ({ ...l, regular: { ...l.regular, prices: { ...l.regular.prices, [t]: v } } }))}
             />
             <NumField
@@ -225,7 +225,7 @@ export function AdminClient({ teamdata }: { teamdata: TeamData }) {
                 {inField && (
                   <NumField
                     value={local.playoff.prices[t] ?? 0}
-                    suffix="coins"
+                    suffix="$"
                     onChange={(v) => setLocal((l) => ({ ...l, playoff: { ...l.playoff, prices: { ...l.playoff.prices, [t]: v } } }))}
                   />
                 )}
