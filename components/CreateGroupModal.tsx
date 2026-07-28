@@ -2,19 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { sanitizeGroupName } from "@/lib/format";
 
 export function CreateGroupModal({ onCancel }: { onCancel: () => void }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function submit() {
     if (!name.trim()) return setErr("Group name is required.");
     if (password.length < 4) return setErr("Password must be at least 4 characters.");
-    if (password !== confirmPassword) return setErr("Passwords don't match.");
 
     setErr(null);
     setBusy(true);
@@ -22,7 +21,7 @@ export function CreateGroupModal({ onCancel }: { onCancel: () => void }) {
       const res = await fetch("/api/groups/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), password }),
+        body: JSON.stringify({ name, password }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {
@@ -30,7 +29,7 @@ export function CreateGroupModal({ onCancel }: { onCancel: () => void }) {
         setBusy(false);
         return;
       }
-      router.push(`/g/${data.groupId}/draft`);
+      router.push(`/g/${data.groupId}/account`);
       router.refresh();
     } catch {
       setErr("Couldn't reach the server - check your connection.");
@@ -47,26 +46,18 @@ export function CreateGroupModal({ onCancel }: { onCancel: () => void }) {
         <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">Group name</label>
         <input
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. The Boys"
-          className="w-full mt-1 mb-3 px-3.5 py-2.5 rounded-xl bg-white border border-[#DADFE3] text-[14px] text-[#131518] outline-none focus:border-[#CC0000]/60 placeholder:text-[#9AA0A6]"
+          onChange={(e) => setName(sanitizeGroupName(e.target.value))}
+          placeholder="e.g. theboys2027"
+          className="w-full mt-1 mb-1 px-3.5 py-2.5 rounded-xl bg-white border border-[#DADFE3] text-[14px] text-[#131518] outline-none focus:border-[#CC0000]/60 placeholder:text-[#9AA0A6]"
         />
+        <p className="text-[11px] text-[#9AA0A6] mb-3">Lowercase letters and numbers only, no spaces.</p>
 
         <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">Password</label>
         <input
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="At least 4 characters"
-          type="password"
-          className="w-full mt-1 mb-3 px-3.5 py-2.5 rounded-xl bg-white border border-[#DADFE3] text-[14px] text-[#131518] outline-none focus:border-[#CC0000]/60 placeholder:text-[#9AA0A6]"
-        />
-
-        <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">Confirm password</label>
-        <input
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Retype the password"
-          type="password"
+          type="text"
           onKeyDown={(e) => e.key === "Enter" && submit()}
           className="w-full mt-1 mb-2 px-3.5 py-2.5 rounded-xl bg-white border border-[#DADFE3] text-[14px] text-[#131518] outline-none focus:border-[#CC0000]/60 placeholder:text-[#9AA0A6]"
         />

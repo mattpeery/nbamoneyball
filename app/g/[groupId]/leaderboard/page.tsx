@@ -58,8 +58,20 @@ export default async function LeaderboardPage({ params }: { params: { groupId: s
         <p className="text-[13px] text-[#6B7280] mt-1">{group.name} · Leaderboard</p>
       </div>
 
-      {pinnedRow && (
+      {pinnedRow ? (
         <PinnedEntryCard row={pinnedRow} rank={pinnedIndex + 1} isPlayoff={isPlayoff} editable={editable} groupId={group.id} />
+      ) : (
+        editable && (
+          <div className="mx-4 mt-4 bg-white border border-[#DADFE3] rounded-2xl p-4 text-center">
+            <p className="text-[13px] text-[#6B7280] mb-3">You haven&apos;t built a roster in this group yet.</p>
+            <Link
+              href={`/g/${group.id}/draft`}
+              className="font-display uppercase tracking-wide block w-full text-center py-2.5 rounded-xl bg-[#CC0000] text-white text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
+            >
+              Create Your Roster
+            </Link>
+          </div>
+        )
       )}
 
       <LeaderboardList rows={rows} isPlayoff={isPlayoff} />

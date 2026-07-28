@@ -32,3 +32,7 @@ export function M2(n: number | undefined): string {
   const v = Math.round((n || 0) * 100) / 100;
   return "$" + v.toLocaleString(undefined, { maximumFractionDigits: 2 }) + "M";
 }
+
+export function sanitizeGroupName(raw: string): string {
+  return raw.toLowerCase().replace(/[^a-z0-9]/g, "");
+}

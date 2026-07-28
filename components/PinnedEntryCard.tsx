@@ -41,7 +41,7 @@ export function PinnedEntryCard({
             href={`/g/${groupId}/draft`}
             className="font-display uppercase tracking-wide block w-full text-center py-2.5 rounded-xl bg-[#CC0000] text-white text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
           >
-            Edit roster
+            {row.basket.length === 0 ? "Build roster" : "Edit roster"}
           </Link>
         ) : (
           <div className="flex items-center gap-1.5 justify-center text-[12px] text-[#6B7280]">
