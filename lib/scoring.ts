@@ -64,12 +64,31 @@ export function validateRoster(
 ): RosterValidationError | null {
   const entries = Object.entries(picks).filter(([, v]) => v > 0);
   if (entries.length === 0) return "empty";
+
   let spent = 0;
+  let fractionalTeam: string | null = null;
+  let fractionalDollars = 0;
   for (const [team, dollars] of entries) {
     const price = prices[team];
-    if (price === undefined || dollars < 0 || Math.abs(dollars - price) > 0.01) return "invalid-amount";
+    if (price === undefined || dollars < 0) return "invalid-amount";
+    const isFullPrice = Math.abs(dollars - price) <= 0.01;
+    const isFractional = dollars < price - 0.01;
+    if (!isFullPrice && !isFractional) return "invalid-amount";
+    if (isFractional) {
+      if (fractionalTeam) return "invalid-amount"; // only one fractional pick allowed
+      fractionalTeam = team;
+      fractionalDollars = dollars;
+    }
     spent += dollars;
   }
   if (spent > budget) return "over-budget";
+
+  // A fractional pick must spend exactly what was left after the rest of the
+  // roster - it's only valid as the final pick using up the remainder.
+  if (fractionalTeam) {
+    const remainderAtPurchase = budget - (spent - fractionalDollars);
+    if (Math.abs(fractionalDollars - remainderAtPurchase) > 0.01) return "invalid-amount";
+  }
+
   return null;
 }

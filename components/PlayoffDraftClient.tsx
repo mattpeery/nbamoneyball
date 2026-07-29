@@ -40,33 +40,49 @@ export function PlayoffDraftClient({
   const spent = useMemo(() => Object.values(alloc).reduce((a, b) => a + b, 0), [alloc]);
   const remaining = budget - spent;
   const distinctTeams = Object.values(alloc).filter((v) => v > 0).length;
+  const hasFractional = Object.entries(alloc).some(
+    ([t, v]) => v > 0 && v < (teamdata.playoff.prices[t] || 0) - 0.01
+  );
   const playoffTeams = ALL_TEAMS.filter((t) => teamdata.playoff.teams[t]).sort(
     (a, b) => (teamdata.playoff.prices[b] ?? 0) - (teamdata.playoff.prices[a] ?? 0)
   );
+
+  // Removing any team makes an existing fractional pick's remainder stale
+  // (it was sized to whatever budget was left at the time), so drop it too.
+  function withoutTeam(a: Record<string, number>, team: string) {
+    const next = { ...a };
+    delete next[team];
+    for (const [t, v] of Object.entries(next)) {
+      if (v > 0 && v < (teamdata.playoff.prices[t] || 0) - 0.01) delete next[t];
+    }
+    return next;
+  }
 
   function toggleTeam(team: string) {
     setMsg(null);
     setAlloc((a) => {
       const owned = (a[team] || 0) > 0;
-      if (owned) {
-        const next = { ...a };
-        delete next[team];
-        return next;
-      }
+      if (owned) return withoutTeam(a, team);
+
       const price = teamdata.playoff.prices[team] || 0;
-      if (price > remaining) {
-        setMsg({ tone: "error", text: "Not enough budget left to buy this team." });
-        return a;
+      const currentSpent = Object.values(a).reduce((s, v) => s + v, 0);
+      const currentRemaining = budget - currentSpent;
+      const currentHasFractional = Object.entries(a).some(
+        ([t, v]) => v > 0 && v < (teamdata.playoff.prices[t] || 0) - 0.01
+      );
+
+      if (currentRemaining >= price) {
+        return { ...a, [team]: price };
       }
-      return { ...a, [team]: price };
+      if (!currentHasFractional && currentRemaining > 0.01) {
+        return { ...a, [team]: currentRemaining };
+      }
+      setMsg({ tone: "error", text: "Not enough budget left to buy this team." });
+      return a;
     });
   }
   function removeTeam(team: string) {
-    setAlloc((a) => {
-      const next = { ...a };
-      delete next[team];
-      return next;
-    });
+    setAlloc((a) => withoutTeam(a, team));
   }
   function clearAll() {
     setMsg(null);
@@ -165,7 +181,8 @@ export function PlayoffDraftClient({
               owned={(alloc[t] || 0) > 0}
               onToggle={toggleTeam}
               disabled={teamdata.playoff.locked || !myRegular}
-              affordable={remaining >= (teamdata.playoff.prices[t] || 0)}
+              remaining={remaining}
+              hasFractional={hasFractional}
             />
           ))}
         </div>

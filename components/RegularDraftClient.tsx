@@ -59,30 +59,46 @@ export function RegularDraftClient({
   const spent = useMemo(() => Object.values(alloc).reduce((a, b) => a + b, 0), [alloc]);
   const remaining = REG_BUDGET - spent;
   const distinctTeams = Object.values(alloc).filter((v) => v > 0).length;
+  const hasFractional = Object.entries(alloc).some(
+    ([t, v]) => v > 0 && v < (teamdata.regular.prices[t] || 0) - 0.01
+  );
+
+  // Removing any team makes an existing fractional pick's remainder stale
+  // (it was sized to whatever budget was left at the time), so drop it too.
+  function withoutTeam(a: Record<string, number>, team: string) {
+    const next = { ...a };
+    delete next[team];
+    for (const [t, v] of Object.entries(next)) {
+      if (v > 0 && v < (teamdata.regular.prices[t] || 0) - 0.01) delete next[t];
+    }
+    return next;
+  }
 
   function toggleTeam(team: string) {
     setMsg(null);
     setAlloc((a) => {
       const owned = (a[team] || 0) > 0;
-      if (owned) {
-        const next = { ...a };
-        delete next[team];
-        return next;
-      }
+      if (owned) return withoutTeam(a, team);
+
       const price = teamdata.regular.prices[team] || 0;
-      if (price > remaining) {
-        setMsg({ tone: "error", text: "Not enough budget left to buy this team." });
-        return a;
+      const currentSpent = Object.values(a).reduce((s, v) => s + v, 0);
+      const currentRemaining = REG_BUDGET - currentSpent;
+      const currentHasFractional = Object.entries(a).some(
+        ([t, v]) => v > 0 && v < (teamdata.regular.prices[t] || 0) - 0.01
+      );
+
+      if (currentRemaining >= price) {
+        return { ...a, [team]: price };
       }
-      return { ...a, [team]: price };
+      if (!currentHasFractional && currentRemaining > 0.01) {
+        return { ...a, [team]: currentRemaining };
+      }
+      setMsg({ tone: "error", text: "Not enough budget left to buy this team." });
+      return a;
     });
   }
   function removeTeam(team: string) {
-    setAlloc((a) => {
-      const next = { ...a };
-      delete next[team];
-      return next;
-    });
+    setAlloc((a) => withoutTeam(a, team));
   }
   function clearAll() {
     setMsg(null);
@@ -187,7 +203,8 @@ export function RegularDraftClient({
                     owned={(alloc[t] || 0) > 0}
                     onToggle={toggleTeam}
                     disabled={locked}
-                    affordable={remaining >= (teamdata.regular.prices[t] || 0)}
+                    remaining={remaining}
+                    hasFractional={hasFractional}
                     projectedWins={PROJECTED_WINS[t]}
                   />
                 ))}

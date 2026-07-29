@@ -115,7 +115,8 @@ export function TeamCard({
   owned,
   onToggle,
   disabled,
-  affordable,
+  remaining = 0,
+  hasFractional,
   projectedWins,
 }: {
   team: string;
@@ -123,11 +124,15 @@ export function TeamCard({
   owned: boolean;
   onToggle: (team: string) => void;
   disabled?: boolean;
-  affordable?: boolean;
+  remaining?: number;
+  hasFractional?: boolean;
   projectedWins?: number;
 }) {
-  const canBuy = !disabled && !owned && affordable;
+  const fullyAffordable = !disabled && !owned && remaining >= price;
+  const fractionallyAffordable = !disabled && !owned && !fullyAffordable && !hasFractional && remaining > 0.01;
+  const canBuy = fullyAffordable || fractionallyAffordable;
   const canRemove = !disabled && owned;
+  const buyAmount = fullyAffordable ? price : fractionallyAffordable ? remaining : price;
 
   let buttonClass = "border ";
   if (owned) {
@@ -157,6 +162,7 @@ export function TeamCard({
         {projectedWins !== undefined && (
           <div className="text-[12.5px] text-[#6B7280] truncate">{projectedWins} projected wins</div>
         )}
+        {fractionallyAffordable && <div className="text-[11px] text-[#16A34A] truncate">Partial share available</div>}
       </div>
       <button
         disabled={owned ? !canRemove : !canBuy}
@@ -168,7 +174,7 @@ export function TeamCard({
             <Check size={11} className="mr-1" /> Owned
           </>
         ) : (
-          `Buy: ${usd(price)}`
+          `Buy: ${usd(buyAmount)}`
         )}
       </button>
     </div>
