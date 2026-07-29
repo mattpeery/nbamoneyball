@@ -58,6 +58,7 @@ export function RegularDraftClient({
 
   const spent = useMemo(() => Object.values(alloc).reduce((a, b) => a + b, 0), [alloc]);
   const remaining = REG_BUDGET - spent;
+  const fullySpent = remaining <= 0.01;
   const distinctTeams = Object.values(alloc).filter((v) => v > 0).length;
   const hasFractional = Object.entries(alloc).some(
     ([t, v]) => v > 0 && v < (teamdata.regular.prices[t] || 0) - 0.01
@@ -226,8 +227,10 @@ export function RegularDraftClient({
             )}
             <button
               onClick={trySubmit}
-              disabled={busy}
-              className="font-display uppercase tracking-wide w-full bg-[#16A34A] text-white font-semibold text-[15px] rounded-xl py-3.5 disabled:opacity-50 active:scale-[0.99]"
+              disabled={busy || !fullySpent}
+              className={`font-display uppercase tracking-wide w-full font-semibold text-[15px] rounded-xl py-3.5 active:scale-[0.99] ${
+                fullySpent ? "bg-[#16A34A] text-white disabled:opacity-50" : "bg-[#D1D5DB] text-[#9AA0A6]"
+              }`}
             >
               {busy ? "Submitting…" : "Submit Roster"}
             </button>
