@@ -158,7 +158,7 @@ export function PlayoffDraftClient({
         </div>
       )}
       {myRegular && (
-        <BudgetBar label="Playoff budget remaining" spent={spent} total={budget} alloc={alloc} onRemove={removeTeam} onClearAll={clearAll} />
+        <BudgetBar label="Playoff budget remaining" spent={spent} total={budget} alloc={alloc} prices={teamdata.playoff.prices} onRemove={removeTeam} onClearAll={clearAll} />
       )}
       {teamdata.playoff.locked && (
         <div className="mt-3 max-w-2xl mx-auto">
@@ -179,6 +179,7 @@ export function PlayoffDraftClient({
               team={t}
               price={teamdata.playoff.prices[t]}
               owned={(alloc[t] || 0) > 0}
+              paidAmount={alloc[t] || 0}
               onToggle={toggleTeam}
               disabled={teamdata.playoff.locked || !myRegular}
               remaining={remaining}

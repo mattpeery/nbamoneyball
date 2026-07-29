@@ -171,7 +171,7 @@ export function RegularDraftClient({
           />
         )}
       </div>
-      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} onRemove={removeTeam} onClearAll={clearAll} />
+      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} prices={teamdata.regular.prices} onRemove={removeTeam} onClearAll={clearAll} />
 
       {locked && (
         <div className="mt-3 max-w-2xl mx-auto">
@@ -201,6 +201,7 @@ export function RegularDraftClient({
                     team={t}
                     price={teamdata.regular.prices[t]}
                     owned={(alloc[t] || 0) > 0}
+                    paidAmount={alloc[t] || 0}
                     onToggle={toggleTeam}
                     disabled={locked}
                     remaining={remaining}

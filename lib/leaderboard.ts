@@ -3,7 +3,7 @@ import type { PlayerRecord, PlayoffPlayerRecord } from "./scoring";
 import { playoffPoints, regularEarned, sharesFor } from "./scoring";
 import { slug } from "./format";
 
-export type LeaderboardBasketItem = { team: string; shares: number; stat: string; contrib: number; wins: number };
+export type LeaderboardBasketItem = { team: string; shares: number; contrib: number };
 export type LeaderboardRow = {
   key: string;
   name: string;
@@ -31,7 +31,7 @@ export function buildLeaderboard(
             const rounds = teamdata.playoff.winsByRound[team] || [0, 0, 0, 0];
             const mult = teamdata.playoff.multipliers;
             const pts = rounds.reduce((s, w, i) => s + w * (mult[i] ?? i + 1), 0);
-            return { team, shares, stat: pts + " pt", contrib: shares * pts, wins: pts };
+            return { team, shares, contrib: shares * pts };
           })
           .sort((a, b) => b.contrib - a.contrib);
         return { key: slug(p.email), name: p.entryName || p.name, sub: p.entryName ? p.name : null, score, basket, unit: "points" as const };
@@ -48,7 +48,7 @@ export function buildLeaderboard(
         .map(([team, dollars]) => {
           const shares = sharesFor(dollars, p.priceSnapshot, team, teamdata.regular.prices);
           const w = teamdata.regular.wins[team] || 0;
-          return { team, shares, stat: w + " W", contrib: shares * w, wins: w };
+          return { team, shares, contrib: shares * w };
         })
         .sort((a, b) => b.contrib - a.contrib);
       return { key: slug(p.email), name: p.entryName || p.name, sub: p.entryName ? p.name : null, score, basket, unit: "earned" as const };

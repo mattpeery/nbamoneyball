@@ -35,6 +35,7 @@ export function BudgetBar({
   spent,
   total,
   alloc = {},
+  prices = {},
   onRemove,
   onClearAll,
 }: {
@@ -42,6 +43,7 @@ export function BudgetBar({
   spent: number;
   total: number;
   alloc?: Record<string, number>;
+  prices?: Record<string, number>;
   onRemove?: (team: string) => void;
   onClearAll?: () => void;
 }) {
@@ -84,22 +86,28 @@ export function BudgetBar({
                 )}
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {roster.map(([team, dollars]) => (
-                  <span
-                    key={team}
-                    className="inline-flex items-center gap-1 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-1.5 py-1 text-[11px] text-[#3A3F45]"
-                  >
-                    {team} · {usd(dollars)}
-                    {onRemove && (
-                      <button
-                        onClick={() => onRemove(team)}
-                        className="w-3.5 h-3.5 rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
-                      >
-                        <X size={9} />
-                      </button>
-                    )}
-                  </span>
-                ))}
+                {roster.map(([team, dollars]) => {
+                  const price = prices[team] || 0;
+                  const shares = price > 0 ? dollars / price : 1;
+                  const fractional = shares < 0.995;
+                  return (
+                    <span
+                      key={team}
+                      className="inline-flex items-center gap-1 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-1.5 py-1 text-[11px] text-[#3A3F45]"
+                    >
+                      {team} · {usd(dollars)}
+                      {fractional && <span className="text-[#16A34A] font-medium">({shares.toFixed(2)})</span>}
+                      {onRemove && (
+                        <button
+                          onClick={() => onRemove(team)}
+                          className="w-3.5 h-3.5 rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
+                        >
+                          <X size={9} />
+                        </button>
+                      )}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -113,6 +121,7 @@ export function TeamCard({
   team,
   price,
   owned,
+  paidAmount = 0,
   onToggle,
   disabled,
   remaining = 0,
@@ -122,6 +131,7 @@ export function TeamCard({
   team: string;
   price: number;
   owned: boolean;
+  paidAmount?: number;
   onToggle: (team: string) => void;
   disabled?: boolean;
   remaining?: number;
@@ -133,6 +143,8 @@ export function TeamCard({
   const canBuy = fullyAffordable || fractionallyAffordable;
   const canRemove = !disabled && owned;
   const buyAmount = fullyAffordable ? price : fractionallyAffordable ? remaining : price;
+  const ownedShares = price > 0 ? paidAmount / price : 1;
+  const ownedFractionally = owned && ownedShares < 0.995;
 
   let buttonClass = "border ";
   if (owned) {
@@ -158,7 +170,10 @@ export function TeamCard({
         )}
       </div>
       <div className="min-w-0">
-        <div className="text-[14px] font-semibold text-[#131518] truncate">{FULL_NAMES[team] || team}</div>
+        <div className="text-[14px] font-semibold text-[#131518] truncate">
+          {FULL_NAMES[team] || team}
+          {ownedFractionally && <span className="text-[#16A34A] font-medium"> ({ownedShares.toFixed(2)})</span>}
+        </div>
         {projectedWins !== undefined && (
           <div className="text-[12.5px] text-[#6B7280] truncate">{projectedWins} projected wins</div>
         )}

@@ -17,8 +17,9 @@ export function RosterCell({ basket, isPlayoff }: { basket: LeaderboardBasketIte
               <img src={logo} alt="" className="w-4 h-4 object-contain shrink-0" loading="lazy" />
             )}
             <span className="text-[12px] text-[#131518] truncate">{b.team}</span>
+            {b.shares < 0.995 && <span className="text-[10px] text-[#16A34A] whitespace-nowrap">({b.shares.toFixed(2)})</span>}
             <span className="text-[11px] text-[#6B7280] whitespace-nowrap">
-              · {b.wins} {isPlayoff ? "pt" : "W"}
+              · {b.contrib.toFixed(1)} {isPlayoff ? "pt" : "W"}
             </span>
           </div>
         );
