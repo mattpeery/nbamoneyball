@@ -90,7 +90,7 @@ export function BudgetBar({
                 Teams you add will appear here. You can easily remove/change picks before submitting.
               </p>
             ) : (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-[9px]">
                 {roster.map(([team, dollars]) => {
                   const price = prices[team] || 0;
                   const shares = price > 0 ? dollars / price : 1;
@@ -98,16 +98,16 @@ export function BudgetBar({
                   return (
                     <span
                       key={team}
-                      className="inline-flex items-center gap-1 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-1.5 py-1 text-[11px] text-[#3A3F45]"
+                      className="inline-flex items-center gap-[6px] bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-[15px] pr-[9px] py-[6px] text-[16.5px] text-[#3A3F45]"
                     >
                       {team} · {usd(dollars)}
                       {fractional && <span className="text-[#16A34A] font-medium">({shares.toFixed(2)})</span>}
                       {onRemove && (
                         <button
                           onClick={() => onRemove(team)}
-                          className="w-3.5 h-3.5 rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
+                          className="w-[21px] h-[21px] rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
                         >
-                          <X size={9} />
+                          <X size={14} />
                         </button>
                       )}
                     </span>
