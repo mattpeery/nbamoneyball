@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGroupByNormalizedName, getGroupById } from "@/lib/groups";
 import { verifyGroupPassword } from "@/lib/groupPassword";
+import { addGroupMember } from "@/lib/data";
 import { createGroupSessionToken, groupCookieName } from "@/lib/groupSession";
+import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -23,6 +25,9 @@ export async function POST(req: NextRequest) {
   if (!token) {
     return NextResponse.json({ error: "Group sessions aren't configured (GROUP_SESSION_SECRET is unset)." }, { status: 500 });
   }
+
+  const identityEmail = req.cookies.get(IDENTITY_COOKIE_NAME)?.value;
+  if (identityEmail) await addGroupMember(group.id, identityEmail);
 
   const res = NextResponse.json({ ok: true, groupId: group.id, groupName: group.name });
   res.cookies.set(groupCookieName(group.id), token, {

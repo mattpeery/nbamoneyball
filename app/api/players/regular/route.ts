@@ -47,15 +47,18 @@ export async function POST(req: NextRequest) {
     .filter((v) => v > 0)
     .reduce((a, b) => a + b, 0);
 
-  const result = await upsertRegularPlayer(groupId, {
-    name,
-    entryName,
-    email,
-    picks,
-    spent,
-    priceSnapshot: teamdata.regular.prices,
-    updatedAt: Date.now(),
-  });
+  const result = await upsertRegularPlayer(
+    {
+      name,
+      entryName,
+      email,
+      picks,
+      spent,
+      priceSnapshot: teamdata.regular.prices,
+      updatedAt: Date.now(),
+    },
+    groupId
+  );
 
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
 

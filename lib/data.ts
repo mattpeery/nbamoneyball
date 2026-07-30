@@ -2,7 +2,7 @@ import "server-only";
 import { getSupabaseAdmin } from "./supabaseAdmin";
 import { defaultTeamData, type TeamData } from "./teams";
 import type { PlayerRecord, PlayoffPlayerRecord } from "./scoring";
-import { slug } from "./format";
+import { slug, PUBLIC_GROUP_ID } from "./format";
 
 type TeamdataRow = {
   id: number;
@@ -59,7 +59,6 @@ export async function saveTeamData(next: TeamData): Promise<SaveResult> {
 
 type PlayerRow = {
   id: string;
-  group_id: string;
   name: string;
   entry_name: string;
   email: string;
@@ -68,6 +67,7 @@ type PlayerRow = {
   price_snapshot: Record<string, number>;
   updated_at: string;
   budget?: number;
+  group_ids?: string[];
 };
 
 function rowToPlayer(row: PlayerRow): PlayerRecord {
@@ -86,99 +86,131 @@ function rowToPlayoffPlayer(row: PlayerRow): PlayoffPlayerRecord {
   return { ...rowToPlayer(row), budget: Number(row.budget) || 0 };
 }
 
-export async function getRegularPlayers(groupId: string): Promise<PlayerRecord[]> {
+/** Every regular-season roster - there is exactly one per player, shared across every group they're in. */
+export async function getRegularPlayers(): Promise<PlayerRecord[]> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return [];
-  const { data } = await supabase.from("players").select("*").eq("group_id", groupId).order("updated_at", { ascending: false });
+  const { data } = await supabase.from("players").select("*").order("updated_at", { ascending: false });
   return (data as PlayerRow[] | null)?.map(rowToPlayer) || [];
 }
 
-export async function getPlayoffPlayers(groupId: string): Promise<PlayoffPlayerRecord[]> {
+/** Regular-season rosters for players who are members of the given group. */
+export async function getRegularPlayersForGroup(groupId: string): Promise<PlayerRecord[]> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return [];
+  const { data } = await supabase
+    .from("players")
+    .select("*")
+    .contains("group_ids", [groupId])
+    .order("updated_at", { ascending: false });
+  return (data as PlayerRow[] | null)?.map(rowToPlayer) || [];
+}
+
+export async function getPlayoffPlayers(): Promise<PlayoffPlayerRecord[]> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return [];
+  const { data } = await supabase.from("playoff_players").select("*").order("updated_at", { ascending: false });
+  return (data as PlayerRow[] | null)?.map(rowToPlayoffPlayer) || [];
+}
+
+/** Group membership lives on the regular-season row, so playoff rosters are filtered via that member list. */
+export async function getGroupMemberIds(groupId: string): Promise<string[]> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return [];
+  const { data } = await supabase.from("players").select("id").contains("group_ids", [groupId]);
+  return (data as { id: string }[] | null)?.map((r) => r.id) || [];
+}
+
+export async function getPlayoffPlayersForGroup(groupId: string): Promise<PlayoffPlayerRecord[]> {
+  const memberIds = await getGroupMemberIds(groupId);
+  if (memberIds.length === 0) return [];
   const supabase = getSupabaseAdmin();
   if (!supabase) return [];
   const { data } = await supabase
     .from("playoff_players")
     .select("*")
-    .eq("group_id", groupId)
+    .in("id", memberIds)
     .order("updated_at", { ascending: false });
   return (data as PlayerRow[] | null)?.map(rowToPlayoffPlayer) || [];
 }
 
-export async function getRegularPlayerByEmail(groupId: string, email: string): Promise<PlayerRecord | null> {
+export async function getRegularPlayerByEmail(email: string): Promise<PlayerRecord | null> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return null;
-  const { data } = await supabase.from("players").select("*").eq("group_id", groupId).eq("id", slug(email)).maybeSingle();
+  const { data } = await supabase.from("players").select("*").eq("id", slug(email)).maybeSingle();
   return data ? rowToPlayer(data as PlayerRow) : null;
 }
 
-export async function getPlayoffPlayerByEmail(groupId: string, email: string): Promise<PlayoffPlayerRecord | null> {
+export async function getPlayoffPlayerByEmail(email: string): Promise<PlayoffPlayerRecord | null> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return null;
-  const { data } = await supabase
-    .from("playoff_players")
-    .select("*")
-    .eq("group_id", groupId)
-    .eq("id", slug(email))
-    .maybeSingle();
+  const { data } = await supabase.from("playoff_players").select("*").eq("id", slug(email)).maybeSingle();
   return data ? rowToPlayoffPlayer(data as PlayerRow) : null;
 }
 
-export async function upsertRegularPlayer(groupId: string, record: PlayerRecord): Promise<SaveResult> {
+/**
+ * Saves a player's one and only regular-season roster. `groupId`, when given
+ * and not the public pool, tags them as a member of that group (additively -
+ * it never removes them from groups they're already in) so the same picks
+ * show up on every group's leaderboard without redrafting.
+ */
+export async function upsertRegularPlayer(record: PlayerRecord, groupId?: string): Promise<SaveResult> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return { ok: false, error: "Database isn't configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are unset)." };
-  const { error } = await supabase.from("players").upsert(
-    {
-      id: slug(record.email),
-      group_id: groupId,
-      name: record.name,
-      entry_name: record.entryName,
-      email: record.email,
-      picks: record.picks,
-      spent: record.spent,
-      price_snapshot: record.priceSnapshot,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "group_id,id" }
-  );
+  const id = slug(record.email);
+  const { data: existing } = await supabase.from("players").select("group_ids").eq("id", id).maybeSingle();
+  const current = (existing as { group_ids?: string[] } | null)?.group_ids || [];
+  const groupIds = groupId && groupId !== PUBLIC_GROUP_ID && !current.includes(groupId) ? [...current, groupId] : current;
+
+  const { error } = await supabase.from("players").upsert({
+    id,
+    name: record.name,
+    entry_name: record.entryName,
+    email: record.email,
+    picks: record.picks,
+    spent: record.spent,
+    price_snapshot: record.priceSnapshot,
+    group_ids: groupIds,
+    updated_at: new Date().toISOString(),
+  });
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
 
-export async function upsertPlayoffPlayer(groupId: string, record: PlayoffPlayerRecord): Promise<SaveResult> {
+export async function upsertPlayoffPlayer(record: PlayoffPlayerRecord): Promise<SaveResult> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return { ok: false, error: "Database isn't configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are unset)." };
-  const { error } = await supabase.from("playoff_players").upsert(
-    {
-      id: slug(record.email),
-      group_id: groupId,
-      name: record.name,
-      entry_name: record.entryName,
-      email: record.email,
-      picks: record.picks,
-      spent: record.spent,
-      budget: record.budget,
-      price_snapshot: record.priceSnapshot,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "group_id,id" }
-  );
+  const { error } = await supabase.from("playoff_players").upsert({
+    id: slug(record.email),
+    name: record.name,
+    entry_name: record.entryName,
+    email: record.email,
+    picks: record.picks,
+    spent: record.spent,
+    budget: record.budget,
+    price_snapshot: record.priceSnapshot,
+    updated_at: new Date().toISOString(),
+  });
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+/** Adds a player to a group's membership list. No-op if they have no roster yet - membership attaches when they first submit one. */
+export async function addGroupMember(groupId: string, email: string): Promise<void> {
+  if (groupId === PUBLIC_GROUP_ID) return;
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return;
+  const id = slug(email);
+  const { data: existing } = await supabase.from("players").select("group_ids").eq("id", id).maybeSingle();
+  if (!existing) return;
+  const current = (existing as { group_ids?: string[] }).group_ids || [];
+  if (current.includes(groupId)) return;
+  await supabase.from("players").update({ group_ids: [...current, groupId] }).eq("id", id);
 }
 
 export async function countAllPlayers(): Promise<number> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return 0;
   const { data } = await supabase.from("players").select("id");
-  if (!data) return 0;
-  return new Set((data as { id: string }[]).map((r) => r.id)).size;
-}
-
-/** Looks up a roster by email across every group - used by Log In. */
-export async function findRegularPlayerAnyGroup(email: string): Promise<PlayerRecord | null> {
-  const supabase = getSupabaseAdmin();
-  if (!supabase) return null;
-  const { data } = await supabase.from("players").select("*").eq("id", slug(email)).limit(1);
-  const row = (data as PlayerRow[] | null)?.[0];
-  return row ? rowToPlayer(row) : null;
+  return data?.length || 0;
 }

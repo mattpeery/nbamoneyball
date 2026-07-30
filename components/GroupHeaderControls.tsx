@@ -35,18 +35,6 @@ export function GroupHeaderControls({
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  async function adoptRoster(targetGroupId: string) {
-    try {
-      await fetch("/api/groups/adopt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId: targetGroupId }),
-      });
-    } catch {
-      // best-effort copy - the group page has its own "make your picks" path
-    }
-  }
-
   return (
     <div className="flex items-center justify-between gap-2 flex-wrap mt-3">
       <div className="relative" ref={ref}>
@@ -116,8 +104,7 @@ export function GroupHeaderControls({
       {showCreate && (
         <CreateGroupModal
           onCancel={() => setShowCreate(false)}
-          onSuccess={async (newGroupId) => {
-            await adoptRoster(newGroupId);
+          onSuccess={(newGroupId) => {
             router.push(`/g/${newGroupId}/invite`);
             router.refresh();
           }}
@@ -126,8 +113,7 @@ export function GroupHeaderControls({
       {showJoin && (
         <JoinGroupModal
           onCancel={() => setShowJoin(false)}
-          onSuccess={async (joinedGroupId) => {
-            await adoptRoster(joinedGroupId);
+          onSuccess={(joinedGroupId) => {
             router.push(`/home?g=${joinedGroupId}`);
             router.refresh();
           }}

@@ -40,9 +40,9 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const myRegular = await getRegularPlayerByEmail(groupId, email);
+  const myRegular = await getRegularPlayerByEmail(email);
   if (!myRegular) {
-    return NextResponse.json({ error: "No regular-season roster found for that email in this group." }, { status: 400 });
+    return NextResponse.json({ error: "No regular-season roster found for that email." }, { status: 400 });
   }
   const budget = Math.floor(regularEarned(myRegular, teamdata));
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     .filter((v) => v > 0)
     .reduce((a, b) => a + b, 0);
 
-  const result = await upsertPlayoffPlayer(groupId, {
+  const result = await upsertPlayoffPlayer({
     name,
     entryName,
     email,

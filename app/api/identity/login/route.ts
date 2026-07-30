@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findRegularPlayerAnyGroup } from "@/lib/data";
+import { getRegularPlayerByEmail } from "@/lib/data";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 
 export async function POST(req: NextRequest) {
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
 
-  const found = await findRegularPlayerAnyGroup(email);
+  const found = await getRegularPlayerByEmail(email);
   if (!found) {
     return NextResponse.json(
       { error: "No entry found for that email - tap Play Now to make your picks." },

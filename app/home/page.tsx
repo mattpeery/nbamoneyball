@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { Flag } from "lucide-react";
 import { getGroupById, type Group } from "@/lib/groups";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
-import { getTeamData, getRegularPlayers, getPlayoffPlayers } from "@/lib/data";
+import { getTeamData, getRegularPlayers, getPlayoffPlayers, getRegularPlayersForGroup, getPlayoffPlayersForGroup } from "@/lib/data";
 import { buildLeaderboard } from "@/lib/leaderboard";
 import { isPlayoffDraftOpen, isRegularDraftOpen } from "@/lib/scoring";
 import { slug, PUBLIC_GROUP_ID, draftPathFor } from "@/lib/format";
@@ -50,8 +50,8 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
 
   const [teamdata, regularPlayers, playoffPlayers] = await Promise.all([
     getTeamData(),
-    getRegularPlayers(selected),
-    getPlayoffPlayers(selected),
+    selected === PUBLIC_GROUP_ID ? getRegularPlayers() : getRegularPlayersForGroup(selected),
+    selected === PUBLIC_GROUP_ID ? getPlayoffPlayers() : getPlayoffPlayersForGroup(selected),
   ]);
   const { isPlayoff, rows } = buildLeaderboard(teamdata, regularPlayers, playoffPlayers);
 

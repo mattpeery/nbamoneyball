@@ -12,10 +12,7 @@ export default async function DraftPage() {
   const identityEmail = cookies().get(IDENTITY_COOKIE_NAME)?.value;
 
   if (teamdata.phase === "playoff") {
-    const [regularPlayers, playoffPlayers] = await Promise.all([
-      getRegularPlayers(PUBLIC_GROUP_ID),
-      getPlayoffPlayers(PUBLIC_GROUP_ID),
-    ]);
+    const [regularPlayers, playoffPlayers] = await Promise.all([getRegularPlayers(), getPlayoffPlayers()]);
     return (
       <PlayoffDraftClient
         teamdata={teamdata}
@@ -28,7 +25,7 @@ export default async function DraftPage() {
     );
   }
 
-  const regularPlayers = await getRegularPlayers(PUBLIC_GROUP_ID);
+  const regularPlayers = await getRegularPlayers();
   return (
     <RegularDraftClient
       teamdata={teamdata}

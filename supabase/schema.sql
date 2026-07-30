@@ -34,24 +34,26 @@ create table if not exists public.groups (
 
 alter table public.groups enable row level security;
 
+-- One row per player - a player has exactly one roster, shared across
+-- every group they belong to. group_ids drives which groups' leaderboards
+-- show them (the public pool shows everyone unconditionally, so it isn't
+-- listed here); see lib/data.ts's addGroupMember/getRegularPlayersForGroup.
 create table if not exists public.players (
-  id text not null,
-  group_id text not null references public.groups(id),
+  id text primary key,
   name text not null,
   entry_name text not null,
   email text not null,
   picks jsonb not null default '{}'::jsonb,
   spent numeric not null default 0,
   price_snapshot jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now(),
-  primary key (group_id, id)
+  group_ids text[] not null default '{}',
+  updated_at timestamptz not null default now()
 );
 
 alter table public.players enable row level security;
 
 create table if not exists public.playoff_players (
-  id text not null,
-  group_id text not null references public.groups(id),
+  id text primary key,
   name text not null,
   entry_name text not null,
   email text not null,
@@ -59,8 +61,7 @@ create table if not exists public.playoff_players (
   spent numeric not null default 0,
   budget numeric not null default 0,
   price_snapshot jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now(),
-  primary key (group_id, id)
+  updated_at timestamptz not null default now()
 );
 
 alter table public.playoff_players enable row level security;
@@ -119,3 +120,64 @@ update public.playoff_players set group_id = 'early-adopters' where group_id is 
 alter table public.playoff_players alter column group_id set not null;
 alter table public.playoff_players drop constraint if exists playoff_players_pkey;
 alter table public.playoff_players add primary key (group_id, id);
+
+-- ============================================================
+-- MIGRATION: collapses per-group picks into a single global roster
+-- per player. A player now has exactly one roster (players.group_ids
+-- lists which private groups it also appears on; the public pool
+-- always shows everyone). Run this whole block once. Safe to re-run.
+-- ============================================================
+
+-- 1. Add the new membership column.
+alter table public.players add column if not exists group_ids text[] not null default '{}';
+
+-- 2. Backfill group_ids from every group a player currently has a row
+--    under (across players and playoff_players), excluding 'public'
+--    since that's implicit for everyone now, not a real membership.
+update public.players p
+set group_ids = coalesce((
+  select array_agg(distinct g.group_id)
+  from (
+    select group_id from public.players where id = p.id
+    union
+    select group_id from public.playoff_players where id = p.id
+  ) g
+  where g.group_id <> 'public'
+), '{}');
+
+-- 3. Collapse players to one row per id: keep the 'public' row if
+--    present, otherwise the most recently updated row.
+with ranked as (
+  select ctid, id,
+         row_number() over (
+           partition by id
+           order by (group_id = 'public') desc, updated_at desc
+         ) as rn
+  from public.players
+)
+delete from public.players p
+using ranked r
+where p.ctid = r.ctid and r.rn > 1;
+
+-- 4. Same collapse for playoff_players.
+with ranked as (
+  select ctid, id,
+         row_number() over (
+           partition by id
+           order by (group_id = 'public') desc, updated_at desc
+         ) as rn
+  from public.playoff_players
+)
+delete from public.playoff_players p
+using ranked r
+where p.ctid = r.ctid and r.rn > 1;
+
+-- 5. Drop the old composite PK + group_id column on both tables now
+--    that there's exactly one row per id; make id the PK.
+alter table public.players drop constraint if exists players_pkey;
+alter table public.players drop column if exists group_id;
+alter table public.players add primary key (id);
+
+alter table public.playoff_players drop constraint if exists playoff_players_pkey;
+alter table public.playoff_players drop column if exists group_id;
+alter table public.playoff_players add primary key (id);
