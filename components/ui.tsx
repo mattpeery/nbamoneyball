@@ -90,24 +90,31 @@ export function BudgetBar({
                 Teams you add will appear here. You can easily remove/change picks before submitting.
               </p>
             ) : (
-              <div className="flex flex-wrap gap-[9px]">
+              <div className="flex flex-wrap gap-2">
                 {roster.map(([team, dollars]) => {
                   const price = prices[team] || 0;
                   const shares = price > 0 ? dollars / price : 1;
                   const fractional = shares < 0.995;
+                  const logo = teamLogoUrl(team);
                   return (
                     <span
                       key={team}
-                      className="inline-flex items-center gap-[6px] bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-[15px] pr-[9px] py-[6px] text-[16.5px] text-[#3A3F45]"
+                      className="inline-flex items-center gap-[6px] bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-[8px] pr-[8px] py-[5px] text-[14px] text-[#3A3F45]"
                     >
-                      {team} · {usd(dollars)}
+                      {logo && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={logo} alt="" className="w-8 h-8 object-contain shrink-0" />
+                      )}
+                      <span>
+                        {team} · {usd(dollars)}
+                      </span>
                       {fractional && <span className="text-[#16A34A] font-medium">({shares.toFixed(2)})</span>}
                       {onRemove && (
                         <button
                           onClick={() => onRemove(team)}
-                          className="w-[21px] h-[21px] rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
+                          className="w-[18px] h-[18px] rounded-full bg-[#E5E7EA] flex items-center justify-center text-[#6B7280]"
                         >
-                          <X size={14} />
+                          <X size={12} />
                         </button>
                       )}
                     </span>

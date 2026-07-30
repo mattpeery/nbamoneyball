@@ -11,23 +11,11 @@ import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { GroupPasswordGate } from "@/components/GroupPasswordGate";
 import { HomeLeaderboard } from "@/components/HomeLeaderboard";
 import { UserEntryCard } from "@/components/UserEntryCard";
+import { GroupHeaderControls } from "@/components/GroupHeaderControls";
 
 export const dynamic = "force-dynamic";
 
 const GROUP_COOKIE_PREFIX = "nba_group_";
-
-function BoardPill({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className={`inline-flex items-center h-8 px-3.5 rounded-full text-[12px] font-medium whitespace-nowrap ${
-        active ? "bg-[#131518] text-white" : "bg-white border border-[#DADFE3] text-[#3A3F45]"
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
 
 export default async function HomePage({ searchParams }: { searchParams: { g?: string } }) {
   const cookieStore = cookies();
@@ -77,27 +65,21 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
     <div className="min-h-screen bg-[#F4F5F6] pb-10">
       <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center justify-between">
-          <Link href="/" className="font-display uppercase tracking-wide text-[20px] font-bold text-[#131518]">
-            NBA Moneyball
-          </Link>
+          <h1 className="font-display uppercase tracking-wide text-[40px] font-bold text-[#131518] leading-none">
+            Leaderboard
+          </h1>
           {isPlayoff && (
             <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#CC0000] bg-[#CC0000]/8 border border-[#CC0000]/25 rounded-full px-2.5 py-1">
               <Flag size={11} /> Playoffs
             </span>
           )}
         </div>
-        <p className="text-[13px] text-[#6B7280] mt-1">My Homepage</p>
 
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          <BoardPill href="/home" active={selected === PUBLIC_GROUP_ID}>
-            Public
-          </BoardPill>
-          {memberGroups.map((g) => (
-            <BoardPill key={g.id} href={`/home?g=${g.id}`} active={selected === g.id}>
-              {g.name}
-            </BoardPill>
-          ))}
-        </div>
+        <GroupHeaderControls
+          selected={selected}
+          selectedName={selected === PUBLIC_GROUP_ID ? "Public" : memberGroups.find((g) => g.id === selected)?.name ?? selected}
+          memberGroups={memberGroups}
+        />
 
         {myRow ? (
           <UserEntryCard row={myRow} rank={myIndex + 1} isPlayoff={isPlayoff} groupId={selected} editable={editable} />
