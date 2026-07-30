@@ -17,11 +17,9 @@ function CountUnit({ value, label }: { value: number; label: string }) {
 }
 
 export function LandingHero({
-  playerCount,
   draftDeadline,
   hasHero,
 }: {
-  playerCount: number;
   draftDeadline: string;
   hasHero: boolean;
 }) {
@@ -57,16 +55,16 @@ export function LandingHero({
           >
             NBA Moneyball
           </h1>
-          <p className="font-display text-[19px] font-medium text-[#55595E] mt-2 leading-snug">How many wins can you buy?</p>
+          <p className="font-display text-[19px] font-medium text-[#55595E] mt-2 leading-snug">A simple, low-maintenance fantasy basketball game</p>
           {hasHero && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src="/hero.png" alt="NBA Moneyball" className="mx-auto mt-5 w-48 h-auto" />
+            <img src="/hero.png" alt="NBA Moneyball" className="mx-auto mt-8 w-48 h-auto" />
           )}
         </div>
 
         <Link
           href="/draft"
-          className="font-display uppercase tracking-wide mt-7 block w-full py-4 rounded-2xl bg-[#16A34A] text-white text-[16px] font-semibold active:scale-[0.98] transition-transform text-center"
+          className="font-display uppercase tracking-wide mt-1 block w-full py-4 rounded-2xl bg-[#16A34A] text-white text-[16px] font-semibold active:scale-[0.98] transition-transform text-center"
         >
           Play Now
         </Link>
@@ -94,12 +92,7 @@ export function LandingHero({
           )}
         </div>
 
-        {playerCount > 0 && (
-          <div className="mt-4 text-center text-[12.5px] text-[#6B7280]">
-            <span className="text-[#131518] font-semibold">{playerCount}</span>{" "}
-            {playerCount === 1 ? "player has" : "players have"} made their picks
-          </div>
-        )}
+        <div className="mt-4 text-center text-[12.5px] text-[#6B7280]">Draft your team in 60 seconds</div>
       </div>
 
       <div className="text-center pb-6 text-[11px] text-[#9AA0A6]">Free to play · results update nightly</div>

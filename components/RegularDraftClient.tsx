@@ -182,12 +182,12 @@ export function RegularDraftClient({
         </div>
       )}
 
-      {([["East", EAST], ["West", WEST]] as const).map(([label, teams]) => {
+      {([["West", WEST], ["East", EAST]] as const).map(([label, teams]) => {
         const sorted = [...teams].sort((a, b) => (teamdata.regular.prices[b] ?? 0) - (teamdata.regular.prices[a] ?? 0));
         return (
           <Section
             key={label}
-            title={label === "East" ? "Eastern Conference" : "Western Conference"}
+            title={label}
             right={
               <button onClick={() => setConfOpen((o) => ({ ...o, [label]: !o[label] }))} className="text-[#6B7280]">
                 <ChevronDown size={16} className={`transition-transform ${confOpen[label] ? "" : "-rotate-90"}`} />
