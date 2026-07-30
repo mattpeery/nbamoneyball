@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, ChevronDown } from "lucide-react";
+import { Check, X, ChevronDown, Info } from "lucide-react";
 import { FULL_NAMES } from "@/lib/teams";
 import { usd } from "@/lib/format";
 import { teamLogoUrl } from "@/lib/logos";
+import { TeamInfoModal } from "@/components/TeamInfoModal";
 
 const CASH = "#16A34A";
 
@@ -138,6 +139,7 @@ export function TeamCard({
   hasFractional?: boolean;
   projectedWins?: number;
 }) {
+  const [showInfo, setShowInfo] = useState(false);
   const fullyAffordable = !disabled && !owned && remaining >= price;
   const fractionallyAffordable = !disabled && !owned && !fullyAffordable && !hasFractional && remaining > 0.01;
   const canBuy = fullyAffordable || fractionallyAffordable;
@@ -158,41 +160,53 @@ export function TeamCard({
 
   const logo = teamLogoUrl(team);
   return (
-    <div
-      className={`grid grid-cols-[34px_1fr_84px] items-center gap-x-2 py-2 px-2.5 border-b border-[#ECEEF0] last:border-b-0 ${
-        owned ? "bg-[#FAFAFA]" : ""
-      }`}
-    >
-      <div className="w-[34px] h-[34px] flex items-center justify-center shrink-0">
-        {logo && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logo} alt="" className="w-8 h-8 object-contain" loading="lazy" />
-        )}
-      </div>
-      <div className="min-w-0">
-        <div className="text-[14px] font-semibold text-[#131518] truncate">
-          {FULL_NAMES[team] || team}
-          {ownedFractionally && <span className="text-[#16A34A] font-medium"> ({ownedShares.toFixed(2)})</span>}
-        </div>
-        {projectedWins !== undefined && (
-          <div className="text-[12.5px] text-[#6B7280] truncate">{projectedWins} projected wins</div>
-        )}
-        {fractionallyAffordable && <div className="text-[11px] text-[#16A34A] truncate">Partial share available</div>}
-      </div>
-      <button
-        disabled={owned ? !canRemove : !canBuy}
-        onClick={() => onToggle(team)}
-        className={`w-[84px] h-8 rounded-full flex items-center justify-center text-[10.5px] font-bold active:scale-95 transition-colors whitespace-nowrap ${buttonClass}`}
+    <>
+      <div
+        className={`grid grid-cols-[34px_1fr_84px] items-center gap-x-2 py-2 px-2.5 border-b border-[#ECEEF0] last:border-b-0 ${
+          owned ? "bg-[#FAFAFA]" : ""
+        }`}
       >
-        {owned ? (
-          <>
-            <Check size={11} className="mr-1" /> Owned
-          </>
-        ) : (
-          `Buy: ${usd(buyAmount)}`
-        )}
-      </button>
-    </div>
+        <div className="w-[34px] h-[34px] flex items-center justify-center shrink-0">
+          {logo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt="" className="w-8 h-8 object-contain" loading="lazy" />
+          )}
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1 min-w-0">
+            <span className="text-[14px] font-semibold text-[#131518] truncate">
+              {FULL_NAMES[team] || team}
+              {ownedFractionally && <span className="text-[#16A34A] font-medium"> ({ownedShares.toFixed(2)})</span>}
+            </span>
+            <button
+              onClick={() => setShowInfo(true)}
+              className="shrink-0 text-[#9AA0A6] hover:text-[#6B7280]"
+              aria-label={`About the ${team}`}
+            >
+              <Info size={14} />
+            </button>
+          </div>
+          {projectedWins !== undefined && (
+            <div className="text-[12.5px] text-[#6B7280] truncate">{projectedWins} projected wins</div>
+          )}
+          {fractionallyAffordable && <div className="text-[11px] text-[#16A34A] truncate">Partial share available</div>}
+        </div>
+        <button
+          disabled={owned ? !canRemove : !canBuy}
+          onClick={() => onToggle(team)}
+          className={`w-[84px] h-8 rounded-full flex items-center justify-center text-[10.5px] font-bold active:scale-95 transition-colors whitespace-nowrap ${buttonClass}`}
+        >
+          {owned ? (
+            <>
+              <Check size={11} className="mr-1" /> Owned
+            </>
+          ) : (
+            `Buy: ${usd(buyAmount)}`
+          )}
+        </button>
+      </div>
+      {showInfo && <TeamInfoModal team={team} onClose={() => setShowInfo(false)} />}
+    </>
   );
 }
 
