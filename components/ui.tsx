@@ -76,16 +76,20 @@ export function BudgetBar({
             />
           </div>
 
-          {roster.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-[#ECEEF0]">
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="text-[14px] font-semibold text-[#131518]">My roster</div>
-                {onClearAll && (
-                  <button onClick={onClearAll} className="text-[11.5px] text-[#CC0000] font-medium underline decoration-dotted">
-                    Clear all
-                  </button>
-                )}
-              </div>
+          <div className="mt-3 pt-3 border-t border-[#ECEEF0]">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="text-[14px] font-semibold text-[#131518]">My roster</div>
+              {onClearAll && roster.length > 0 && (
+                <button onClick={onClearAll} className="text-[11.5px] text-[#CC0000] font-medium underline decoration-dotted">
+                  Clear all
+                </button>
+              )}
+            </div>
+            {roster.length === 0 ? (
+              <p className="text-[12px] text-[#9AA0A6] leading-relaxed">
+                Teams you add will appear here. You can easily remove/change picks before submitting.
+              </p>
+            ) : (
               <div className="flex flex-wrap gap-1.5">
                 {roster.map(([team, dollars]) => {
                   const price = prices[team] || 0;
@@ -110,8 +114,8 @@ export function BudgetBar({
                   );
                 })}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

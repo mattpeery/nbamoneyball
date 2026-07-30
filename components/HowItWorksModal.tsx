@@ -13,11 +13,11 @@ export function HowItWorksModal({ onClose }: { onClose: () => void }) {
         <ol className="space-y-2 mb-3">
           <li className="text-[13.5px] text-[#3A3F45] leading-relaxed">
             <span className="font-semibold text-[#131518]">1.</span> Before Opening Day (Oct. 20), use your $164
-            budget to build your roster of NBA teams.
+            budget to draft your &quot;team&quot; of 3-7 NBA teams.
           </li>
           <li className="text-[13.5px] text-[#3A3F45] leading-relaxed">
-            <span className="font-semibold text-[#131518]">2.</span> During the 2026-2027 NBA regular season, you
-            will earn $1 for each of your teams&apos; wins.
+            <span className="font-semibold text-[#131518]">2.</span> At the end of the 2026 - 2027 regular season,
+            your teams will be worth $1 for every game they win.
           </li>
           <li className="text-[13.5px] text-[#3A3F45] leading-relaxed">
             <span className="font-semibold text-[#131518]">3.</span> You will use the money you earn in the regular
@@ -25,9 +25,20 @@ export function HowItWorksModal({ onClose }: { onClose: () => void }) {
           </li>
         </ol>
         <p className="text-[12.5px] text-[#3A3F45] leading-relaxed mb-3">
-          <span className="font-semibold text-[#131518]">Tip:</span> pick teams that you think will beat their
-          projected wins for the best value.
+          <span className="font-semibold text-[#131518]">Tip:</span> Good teams are expensive. Bad teams are cheap.
+          Pick teams that will beat their projections for the best value.
         </p>
+        <p className="text-[12.5px] text-[#3A3F45] leading-relaxed mb-3">
+          <span className="font-semibold text-[#131518]">Bonus:</span> during the season, you will have three
+          24-hour windows to add/drop teams from your roster:
+        </p>
+        <ol className="space-y-1.5 mb-5 pl-4 list-decimal">
+          <li className="text-[12.5px] text-[#3A3F45] leading-relaxed">
+            The &quot;Overreaction&quot; window, after 5 games
+          </li>
+          <li className="text-[12.5px] text-[#3A3F45] leading-relaxed">The All-Star Break</li>
+          <li className="text-[12.5px] text-[#3A3F45] leading-relaxed">The Trade Deadline</li>
+        </ol>
         <p className="text-[12.5px] text-[#6B7280] leading-relaxed mb-5 italic">
           Example: Bill Simmons uses his $164 to buy the Thunder, Warriors, Celtics, and Nets. Those teams combine to
           win 163 games, earning Bill $163, which he will use to construct his playoff team.
