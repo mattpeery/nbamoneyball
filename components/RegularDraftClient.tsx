@@ -6,31 +6,25 @@ import { Lock, ChevronDown } from "lucide-react";
 import { EAST, WEST, REG_BUDGET, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
 import { isRegularDraftOpen } from "@/lib/scoring";
-import { slug, rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
+import { rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
 
-type PendingDetails = { name: string; entryName: string; email: string };
+type PendingDetails = { name: string; entryName: string; email: string; password: string };
 
 export function RegularDraftClient({
   teamdata,
-  players,
-  initialEmail,
+  preloaded,
   groupId,
   groupName,
 }: {
   teamdata: TeamData;
-  players: PlayerRecord[];
-  initialEmail?: string;
+  preloaded?: PlayerRecord | null;
   groupId: string;
   groupName: string;
 }) {
   const router = useRouter();
-  const preloaded = useMemo(
-    () => (initialEmail ? players.find((p) => slug(p.email) === slug(initialEmail)) : undefined),
-    [initialEmail, players]
-  );
 
   const [alloc, setAlloc] = useState<Record<string, number>>(preloaded?.picks || {});
   const [msg, setMsg] = useState<{ tone: "error" | "success"; text: string } | null>(null);
@@ -38,7 +32,10 @@ export function RegularDraftClient({
   const [showModal, setShowModal] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [lookupEmail, setLookupEmail] = useState("");
-  const [loaded, setLoaded] = useState<{ name?: string; entryName?: string; email?: string; found: boolean } | null>(null);
+  const [lookupPassword, setLookupPassword] = useState("");
+  const [loaded, setLoaded] = useState<{ name?: string; entryName?: string; email?: string } | null>(null);
+  const [lookupMsg, setLookupMsg] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const [lookupBusy, setLookupBusy] = useState(false);
   const [busy, setBusy] = useState(false);
 
   // Auto-open the How To Play popup the first time someone lands here.
@@ -106,12 +103,32 @@ export function RegularDraftClient({
     setAlloc({});
   }
 
-  function doLookup() {
-    const found = players.find((p) => p.email && slug(p.email) === slug(lookupEmail || ""));
-    if (found) {
-      setAlloc(found.picks || {});
-      setLoaded({ name: found.name, entryName: found.entryName, email: found.email, found: true });
-    } else setLoaded({ found: false });
+  async function doLookup() {
+    if (!lookupEmail.trim() || !lookupPassword) {
+      setLookupMsg({ tone: "error", text: "Enter your email and password." });
+      return;
+    }
+    setLookupBusy(true);
+    setLookupMsg(null);
+    try {
+      const res = await fetch("/api/players/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: lookupEmail.trim(), password: lookupPassword }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        setLookupMsg({ tone: "error", text: data?.error || "Couldn't load your roster - try again." });
+        return;
+      }
+      setAlloc(data.player.picks || {});
+      setLoaded({ name: data.player.name, entryName: data.player.entryName, email: data.player.email });
+      setLookupMsg({ tone: "success", text: "Roster loaded - make changes and submit again to update it." });
+    } catch {
+      setLookupMsg({ tone: "error", text: "Couldn't reach the server - check your connection." });
+    } finally {
+      setLookupBusy(false);
+    }
   }
 
   function trySubmit() {
@@ -165,10 +182,11 @@ export function RegularDraftClient({
             label="Your email"
             value={lookupEmail}
             setValue={setLookupEmail}
+            password={lookupPassword}
+            setPassword={setLookupPassword}
             onLoad={doLookup}
-            found={loaded?.found}
-            foundMsg="Roster loaded - make changes and submit again to update it."
-            notFoundMsg="No roster found for that email."
+            message={lookupMsg}
+            busy={lookupBusy}
           />
         )}
       </div>
@@ -243,7 +261,7 @@ export function RegularDraftClient({
         <ConfirmDetailsModal
           defaultName={loaded?.name || preloaded?.name || ""}
           defaultEntryName={loaded?.entryName || preloaded?.entryName || ""}
-          defaultEmail={loaded?.email || preloaded?.email || lookupEmail || initialEmail || ""}
+          defaultEmail={loaded?.email || preloaded?.email || lookupEmail || ""}
           onCancel={() => setShowModal(false)}
           onConfirm={confirmSubmit}
           busy={busy}

@@ -2,22 +2,25 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PasswordInput } from "@/components/ui";
 
 export function LoginModal({ onCancel }: { onCancel: () => void }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function submit() {
     if (!email.trim() || !email.includes("@")) return setErr("Enter a valid email address.");
+    if (!password) return setErr("Enter your password.");
     setErr(null);
     setBusy(true);
     try {
       const res = await fetch("/api/identity/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {
@@ -37,7 +40,7 @@ export function LoginModal({ onCancel }: { onCancel: () => void }) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-4" onClick={onCancel}>
       <div className="w-full max-w-sm bg-white border border-[#DADFE3] rounded-2xl p-5" onClick={(e) => e.stopPropagation()}>
         <h3 className="font-display uppercase tracking-wide text-[17px] font-semibold text-[#131518] mb-1">Log In</h3>
-        <p className="text-[12.5px] text-[#6B7280] mb-4">Enter the email you used to submit your picks.</p>
+        <p className="text-[12.5px] text-[#6B7280] mb-4">Enter the email and password you used to submit your picks.</p>
 
         <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">Email address</label>
         <input
@@ -49,9 +52,20 @@ export function LoginModal({ onCancel }: { onCancel: () => void }) {
           placeholder="you@email.com"
           type="email"
           autoFocus
-          onKeyDown={(e) => e.key === "Enter" && submit()}
-          className="w-full mt-1 mb-2 px-3.5 py-2.5 rounded-xl bg-white border border-[#DADFE3] text-[14px] text-[#131518] outline-none focus:border-[#16A34A]/60 placeholder:text-[#9AA0A6]"
+          className="w-full mt-1 mb-3 px-3.5 py-2.5 rounded-xl bg-white border border-[#DADFE3] text-[14px] text-[#131518] outline-none focus:border-[#16A34A]/60 placeholder:text-[#9AA0A6]"
         />
+
+        <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">Password</label>
+        <div className="mt-1 mb-2">
+          <PasswordInput
+            value={password}
+            onChange={(v) => {
+              setPassword(v);
+              setErr(null);
+            }}
+            onEnter={submit}
+          />
+        </div>
 
         {err && <div className="text-[12px] text-[#CC0000] mb-1">{err}</div>}
 

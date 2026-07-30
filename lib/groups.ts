@@ -1,7 +1,7 @@
 import "server-only";
 import crypto from "crypto";
 import { getSupabaseAdmin } from "./supabaseAdmin";
-import { hashGroupPassword } from "./groupPassword";
+import { hashPassword } from "./password";
 import { sanitizeGroupName } from "./format";
 
 export type Group = { id: string; name: string; createdAt: number };
@@ -34,7 +34,7 @@ export async function createGroup(name: string, password: string): Promise<Creat
   }
 
   const id = `${cleanName}-${crypto.randomBytes(3).toString("hex")}`;
-  const passwordHash = hashGroupPassword(password);
+  const passwordHash = hashPassword(password);
 
   const { error } = await supabase.from("groups").insert({
     id,

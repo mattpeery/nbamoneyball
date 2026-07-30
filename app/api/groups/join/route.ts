@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGroupByNormalizedName, getGroupById } from "@/lib/groups";
-import { verifyGroupPassword } from "@/lib/groupPassword";
+import { verifyPassword } from "@/lib/password";
 import { addGroupMember } from "@/lib/data";
 import { createGroupSessionToken, groupCookieName } from "@/lib/groupSession";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   const group = groupId ? await getGroupById(groupId) : await getGroupByNormalizedName(name);
   const genericError = "Group name or password is incorrect.";
-  if (!group || !verifyGroupPassword(password, group.passwordHash)) {
+  if (!group || !verifyPassword(password, group.passwordHash)) {
     return NextResponse.json({ error: genericError }, { status: 401 });
   }
 

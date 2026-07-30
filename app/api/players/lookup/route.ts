@@ -3,28 +3,28 @@ import { getRegularPlayerByEmail, getPlayerPasswordHash } from "@/lib/data";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { verifyPassword } from "@/lib/password";
 
+const GENERIC_ERROR = "Email or password is incorrect.";
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const email = typeof body?.email === "string" ? body.email.trim() : "";
   const password = typeof body?.password === "string" ? body.password : "";
-  if (!email || !email.includes("@") || !password) {
-    return NextResponse.json({ error: "Enter your email and password." }, { status: 400 });
+  if (!email || !password) {
+    return NextResponse.json({ error: GENERIC_ERROR }, { status: 400 });
   }
 
   const passwordHash = await getPlayerPasswordHash(email);
   if (!passwordHash || !verifyPassword(password, passwordHash)) {
-    return NextResponse.json({ error: "Email or password is incorrect." }, { status: 401 });
+    return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
   }
 
-  const found = await getRegularPlayerByEmail(email);
-  if (!found) {
-    return NextResponse.json(
-      { error: "No entry found for that email - tap Play Now to make your picks." },
-      { status: 404 }
-    );
-  }
+  const player = await getRegularPlayerByEmail(email);
+  if (!player) return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
 
-  const res = NextResponse.json({ ok: true });
+  const res = NextResponse.json({
+    ok: true,
+    player: { name: player.name, entryName: player.entryName, email: player.email, picks: player.picks },
+  });
   res.cookies.set(IDENTITY_COOKIE_NAME, email.toLowerCase(), {
     httpOnly: false,
     sameSite: "lax",

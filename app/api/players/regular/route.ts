@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTeamData, upsertRegularPlayer } from "@/lib/data";
+import { getTeamData, upsertRegularPlayer, getPlayerPasswordHash } from "@/lib/data";
 import { isRegularDraftOpen, validateRoster } from "@/lib/scoring";
 import { ALL_TEAMS, REG_BUDGET } from "@/lib/teams";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { rosterErrorMessage, PUBLIC_GROUP_ID } from "@/lib/format";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
+import { hashPassword, verifyPassword } from "@/lib/password";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -12,6 +13,7 @@ export async function POST(req: NextRequest) {
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const entryName = typeof body?.entryName === "string" ? body.entryName.trim() : "";
   const email = typeof body?.email === "string" ? body.email.trim() : "";
+  const password = typeof body?.password === "string" ? body.password : "";
   const picks: Record<string, number> = body?.picks && typeof body.picks === "object" ? body.picks : {};
 
   if (!groupId) {
@@ -31,6 +33,20 @@ export async function POST(req: NextRequest) {
     if (!ALL_TEAMS.includes(team)) {
       return NextResponse.json({ error: `Unknown team: ${team}` }, { status: 400 });
     }
+  }
+
+  const existingHash = await getPlayerPasswordHash(email);
+  let passwordHash: string;
+  if (existingHash) {
+    if (!password || !verifyPassword(password, existingHash)) {
+      return NextResponse.json({ error: "Incorrect password for this email." }, { status: 401 });
+    }
+    passwordHash = existingHash;
+  } else {
+    if (!password || password.length < 6) {
+      return NextResponse.json({ error: "Choose a password of at least 6 characters." }, { status: 400 });
+    }
+    passwordHash = hashPassword(password);
   }
 
   const teamdata = await getTeamData();
@@ -57,6 +73,7 @@ export async function POST(req: NextRequest) {
       priceSnapshot: teamdata.regular.prices,
       updatedAt: Date.now(),
     },
+    passwordHash,
     groupId
   );
 

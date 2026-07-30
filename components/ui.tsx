@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, ChevronDown, Info } from "lucide-react";
+import { Check, X, ChevronDown, Info, Eye, EyeOff } from "lucide-react";
 import { FULL_NAMES } from "@/lib/teams";
 import { usd } from "@/lib/format";
 import { teamLogoUrl } from "@/lib/logos";
@@ -221,22 +221,60 @@ export function TeamCard({
   );
 }
 
+export function PasswordInput({
+  value,
+  onChange,
+  placeholder = "Password",
+  onEnter,
+  bg = "bg-white",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  onEnter?: () => void;
+  bg?: string;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        type={show ? "text" : "password"}
+        onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
+        className={`w-full ${bg} border border-[#DADFE3] rounded-xl px-3.5 py-2.5 pr-10 text-[14px] text-[#131518] outline-none focus:border-[#CC0000]/60 placeholder:text-[#9AA0A6]`}
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9AA0A6]"
+        aria-label={show ? "Hide password" : "Show password"}
+      >
+        {show ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
+  );
+}
+
 export function LoadLookup({
   label,
   value,
   setValue,
+  password,
+  setPassword,
   onLoad,
-  foundMsg,
-  notFoundMsg,
-  found,
+  message,
+  busy,
 }: {
   label: string;
   value: string;
   setValue: (v: string) => void;
+  password: string;
+  setPassword: (v: string) => void;
   onLoad: () => void;
-  foundMsg: string;
-  notFoundMsg: string;
-  found?: boolean;
+  message?: { tone: "success" | "error"; text: string } | null;
+  busy?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -248,20 +286,31 @@ export function LoadLookup({
       ) : (
         <div className="bg-white border border-[#DADFE3] rounded-xl p-3">
           <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">{label}</label>
+          <input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="you@email.com"
+            type="email"
+            className="w-full mt-1.5 bg-[#F9FAFA] border border-[#DADFE3] rounded-lg px-3 py-2 text-[13.5px] text-[#131518] outline-none focus:border-[#CC0000]/60 placeholder:text-[#9AA0A6]"
+          />
+          <label className="text-[11px] uppercase tracking-wider text-[#6B7280] mt-2 block">Password</label>
           <div className="flex gap-2 mt-1.5">
-            <input
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="you@email.com"
-              type="email"
-              className="flex-1 bg-[#F9FAFA] border border-[#DADFE3] rounded-lg px-3 py-2 text-[13.5px] text-[#131518] outline-none focus:border-[#CC0000]/60 placeholder:text-[#9AA0A6]"
-            />
-            <button onClick={onLoad} className="px-3.5 rounded-lg bg-[#131518] text-white text-[12.5px] font-medium">
-              Load
+            <div className="flex-1">
+              <PasswordInput value={password} onChange={setPassword} placeholder="Your password" onEnter={onLoad} bg="bg-[#F9FAFA]" />
+            </div>
+            <button
+              onClick={onLoad}
+              disabled={busy}
+              className="px-3.5 rounded-lg bg-[#131518] text-white text-[12.5px] font-medium disabled:opacity-50"
+            >
+              {busy ? "Loading…" : "Load"}
             </button>
           </div>
-          {found === true && <p className="text-[11.5px] text-[#131518] font-medium mt-1.5">{foundMsg}</p>}
-          {found === false && <p className="text-[11.5px] text-[#CC0000] mt-1.5">{notFoundMsg}</p>}
+          {message && (
+            <p className={`text-[11.5px] font-medium mt-1.5 ${message.tone === "success" ? "text-[#131518]" : "text-[#CC0000]"}`}>
+              {message.text}
+            </p>
+          )}
         </div>
       )}
     </div>

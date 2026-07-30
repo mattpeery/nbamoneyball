@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTeamData, getRegularPlayerByEmail, upsertPlayoffPlayer } from "@/lib/data";
+import { getTeamData, getRegularPlayerByEmail, getPlayerPasswordHash, upsertPlayoffPlayer } from "@/lib/data";
 import { isPlayoffDraftOpen, regularEarned, validateRoster } from "@/lib/scoring";
 import { ALL_TEAMS } from "@/lib/teams";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { rosterErrorMessage, PUBLIC_GROUP_ID } from "@/lib/format";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
+import { verifyPassword } from "@/lib/password";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -12,6 +13,7 @@ export async function POST(req: NextRequest) {
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const entryName = typeof body?.entryName === "string" ? body.entryName.trim() : "";
   const email = typeof body?.email === "string" ? body.email.trim() : "";
+  const password = typeof body?.password === "string" ? body.password : "";
   const picks: Record<string, number> = body?.picks && typeof body.picks === "object" ? body.picks : {};
 
   if (!groupId) {
@@ -26,6 +28,11 @@ export async function POST(req: NextRequest) {
 
   if (!name || !entryName || !email || !email.includes("@")) {
     return NextResponse.json({ error: "Name, entry name, and a valid email are required." }, { status: 400 });
+  }
+
+  const passwordHash = await getPlayerPasswordHash(email);
+  if (!passwordHash || !password || !verifyPassword(password, passwordHash)) {
+    return NextResponse.json({ error: "Incorrect password for this email." }, { status: 401 });
   }
 
   const teamdata = await getTeamData();

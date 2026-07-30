@@ -68,6 +68,7 @@ type PlayerRow = {
   updated_at: string;
   budget?: number;
   group_ids?: string[];
+  password_hash?: string;
 };
 
 function rowToPlayer(row: PlayerRow): PlayerRecord {
@@ -148,13 +149,23 @@ export async function getPlayoffPlayerByEmail(email: string): Promise<PlayoffPla
   return data ? rowToPlayoffPlayer(data as PlayerRow) : null;
 }
 
+/** The stored password hash for a player's roster, or null if they have no roster yet. */
+export async function getPlayerPasswordHash(email: string): Promise<string | null> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return null;
+  const { data } = await supabase.from("players").select("password_hash").eq("id", slug(email)).maybeSingle();
+  return (data as { password_hash?: string } | null)?.password_hash || null;
+}
+
 /**
  * Saves a player's one and only regular-season roster. `groupId`, when given
  * and not the public pool, tags them as a member of that group (additively -
  * it never removes them from groups they're already in) so the same picks
- * show up on every group's leaderboard without redrafting.
+ * show up on every group's leaderboard without redrafting. `passwordHash` is
+ * required - callers verify/create it via getPlayerPasswordHash + lib/password
+ * before calling this, so the hash saved here is always the correct one.
  */
-export async function upsertRegularPlayer(record: PlayerRecord, groupId?: string): Promise<SaveResult> {
+export async function upsertRegularPlayer(record: PlayerRecord, passwordHash: string, groupId?: string): Promise<SaveResult> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return { ok: false, error: "Database isn't configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are unset)." };
   const id = slug(record.email);
@@ -171,6 +182,7 @@ export async function upsertRegularPlayer(record: PlayerRecord, groupId?: string
     spent: record.spent,
     price_snapshot: record.priceSnapshot,
     group_ids: groupIds,
+    password_hash: passwordHash,
     updated_at: new Date().toISOString(),
   });
   if (error) return { ok: false, error: error.message };

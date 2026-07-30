@@ -47,6 +47,7 @@ create table if not exists public.players (
   spent numeric not null default 0,
   price_snapshot jsonb not null default '{}'::jsonb,
   group_ids text[] not null default '{}',
+  password_hash text,
   updated_at timestamptz not null default now()
 );
 
@@ -181,3 +182,11 @@ alter table public.players add primary key (id);
 alter table public.playoff_players drop constraint if exists playoff_players_pkey;
 alter table public.playoff_players drop column if exists group_id;
 alter table public.playoff_players add primary key (id);
+
+-- ============================================================
+-- MIGRATION: adds a required password to each player's roster, so
+-- loading/editing someone's picks needs more than just knowing their
+-- email. Safe to re-run.
+-- ============================================================
+
+alter table public.players add column if not exists password_hash text;
