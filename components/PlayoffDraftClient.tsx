@@ -37,6 +37,15 @@ export function PlayoffDraftClient({
   const [showModal, setShowModal] = useState(false);
   const [busy, setBusy] = useState(false);
 
+  // Lifted out of the modal so name/entry name/email/password survive the
+  // modal closing (backdrop click, a rejected submit, etc.) instead of
+  // resetting every time it unmounts.
+  const [detailName, setDetailName] = useState(preloaded?.myRegular.name || "");
+  const [detailEntryName, setDetailEntryName] = useState(preloaded?.myRegular.entryName || "");
+  const [detailEmail, setDetailEmail] = useState(preloaded?.myRegular.email || "");
+  const [detailPassword, setDetailPassword] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const myRegular = unlocked?.myRegular || null;
   const budget = unlocked?.budget || 0;
   const locked = !isPlayoffDraftOpen(teamdata) || !myRegular;
@@ -120,6 +129,9 @@ export function PlayoffDraftClient({
         return;
       }
       setUnlocked({ myRegular: data.myRegular, budget: data.budget, existingPicks: data.existingPicks });
+      setDetailName(data.myRegular.name);
+      setDetailEntryName(data.myRegular.entryName);
+      setDetailEmail(data.myRegular.email);
     } catch {
       setUnlockMsg("Couldn't reach the server - check your connection.");
     } finally {
@@ -131,28 +143,36 @@ export function PlayoffDraftClient({
     setMsg(null);
     if (!myRegular) return setMsg({ tone: "error", text: "Verify your email and password first." });
     if (distinctTeams === 0) return setMsg({ tone: "error", text: rosterErrorMessage("empty") });
+    setSubmitError(null);
     setShowModal(true);
   }
 
-  async function confirmSubmit({ name, entryName, email: confirmedEmail, password: confirmedPassword }: { name: string; entryName: string; email: string; password: string }) {
+  async function confirmSubmit() {
     setBusy(true);
+    setSubmitError(null);
     try {
       const res = await fetch("/api/players/playoff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId, name, entryName, email: confirmedEmail, password: confirmedPassword, picks: alloc }),
+        body: JSON.stringify({
+          groupId,
+          name: detailName.trim(),
+          entryName: detailEntryName.trim(),
+          email: detailEmail.trim(),
+          password: detailPassword,
+          picks: alloc,
+        }),
       });
-      setShowModal(false);
       if (res.ok) {
+        setShowModal(false);
         router.push(leaderboardPathFor(groupId));
         router.refresh();
       } else {
         const data = await res.json().catch(() => null);
-        setMsg({ tone: "error", text: data?.error || "Couldn't submit - check your connection and try again." });
+        setSubmitError(data?.error || "Couldn't submit - check your connection and try again.");
       }
     } catch {
-      setShowModal(false);
-      setMsg({ tone: "error", text: "Couldn't submit - check your connection and try again." });
+      setSubmitError("Couldn't reach the server - check your connection.");
     } finally {
       setBusy(false);
     }
@@ -262,9 +282,15 @@ export function PlayoffDraftClient({
 
       {showModal && (
         <ConfirmDetailsModal
-          defaultName={myRegular?.name || ""}
-          defaultEntryName={myRegular?.entryName || ""}
-          defaultEmail={myRegular?.email || email || ""}
+          name={detailName}
+          setName={setDetailName}
+          entryName={detailEntryName}
+          setEntryName={setDetailEntryName}
+          email={detailEmail}
+          setEmail={setDetailEmail}
+          password={detailPassword}
+          setPassword={setDetailPassword}
+          submitError={submitError}
           onCancel={() => setShowModal(false)}
           onConfirm={confirmSubmit}
           busy={busy}

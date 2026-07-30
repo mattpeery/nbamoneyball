@@ -4,34 +4,44 @@ import { useState } from "react";
 import { PasswordInput } from "@/components/ui";
 
 export function ConfirmDetailsModal({
-  defaultName = "",
-  defaultEntryName = "",
-  defaultEmail = "",
+  name,
+  setName,
+  entryName,
+  setEntryName,
+  email,
+  setEmail,
+  password,
+  setPassword,
+  submitError,
   onCancel,
   onConfirm,
   busy,
 }: {
-  defaultName?: string;
-  defaultEntryName?: string;
-  defaultEmail?: string;
+  name: string;
+  setName: (v: string) => void;
+  entryName: string;
+  setEntryName: (v: string) => void;
+  email: string;
+  setEmail: (v: string) => void;
+  password: string;
+  setPassword: (v: string) => void;
+  submitError?: string | null;
   onCancel: () => void;
-  onConfirm: (details: { name: string; entryName: string; email: string; password: string }) => void;
+  onConfirm: () => void;
   busy?: boolean;
 }) {
-  const [name, setName] = useState(defaultName);
-  const [entryName, setEntryName] = useState(defaultEntryName);
-  const [email, setEmail] = useState(defaultEmail);
-  const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
   function confirm() {
     if (!name.trim()) return setErr("Name is required.");
     if (!entryName.trim()) return setErr("Entry name is required.");
     if (!email.trim() || !email.includes("@") || !email.includes(".")) return setErr("Enter a valid email address.");
-    if (!password) return setErr("Password is required.");
+    if (!password || password.length < 6) return setErr("Password must be at least 6 characters.");
     setErr(null);
-    onConfirm({ name: name.trim(), entryName: entryName.trim(), email: email.trim(), password });
+    onConfirm();
   }
+
+  const shownError = err || submitError;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-4" onClick={onCancel}>
@@ -72,7 +82,7 @@ export function ConfirmDetailsModal({
           Set this once, then use it to edit your picks later. At least 6 characters.
         </p>
 
-        {err && <div className="text-[12px] text-[#CC0000] mb-1">{err}</div>}
+        {shownError && <div className="text-[12px] text-[#CC0000] mb-1">{shownError}</div>}
 
         <div className="flex gap-2 mt-4">
           <button onClick={onCancel} className="flex-1 py-3 rounded-xl bg-white border border-[#DADFE3] text-[#131518] text-[14px] font-medium active:scale-[0.98]">

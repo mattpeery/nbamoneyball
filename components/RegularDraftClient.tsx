@@ -11,8 +11,6 @@ import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/co
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
 
-type PendingDetails = { name: string; entryName: string; email: string; password: string };
-
 export function RegularDraftClient({
   teamdata,
   preloaded,
@@ -33,10 +31,18 @@ export function RegularDraftClient({
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [lookupEmail, setLookupEmail] = useState("");
   const [lookupPassword, setLookupPassword] = useState("");
-  const [loaded, setLoaded] = useState<{ name?: string; entryName?: string; email?: string } | null>(null);
   const [lookupMsg, setLookupMsg] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [lookupBusy, setLookupBusy] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  // Lifted out of the modal so name/entry name/email/password survive the
+  // modal closing (backdrop click, a rejected submit, etc.) instead of
+  // resetting every time it unmounts.
+  const [detailName, setDetailName] = useState(preloaded?.name || "");
+  const [detailEntryName, setDetailEntryName] = useState(preloaded?.entryName || "");
+  const [detailEmail, setDetailEmail] = useState(preloaded?.email || "");
+  const [detailPassword, setDetailPassword] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Auto-open the How To Play popup the first time someone lands here.
   useEffect(() => {
@@ -122,7 +128,9 @@ export function RegularDraftClient({
         return;
       }
       setAlloc(data.player.picks || {});
-      setLoaded({ name: data.player.name, entryName: data.player.entryName, email: data.player.email });
+      setDetailName(data.player.name);
+      setDetailEntryName(data.player.entryName);
+      setDetailEmail(data.player.email);
       setLookupMsg({ tone: "success", text: "Roster loaded - make changes and submit again to update it." });
     } catch {
       setLookupMsg({ tone: "error", text: "Couldn't reach the server - check your connection." });
@@ -134,28 +142,37 @@ export function RegularDraftClient({
   function trySubmit() {
     setMsg(null);
     if (distinctTeams === 0) return setMsg({ tone: "error", text: rosterErrorMessage("empty") });
+    if (!detailEmail && lookupEmail) setDetailEmail(lookupEmail);
+    setSubmitError(null);
     setShowModal(true);
   }
 
-  async function confirmSubmit(details: PendingDetails) {
+  async function confirmSubmit() {
     setBusy(true);
+    setSubmitError(null);
     try {
       const res = await fetch("/api/players/regular", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId, ...details, picks: alloc }),
+        body: JSON.stringify({
+          groupId,
+          name: detailName.trim(),
+          entryName: detailEntryName.trim(),
+          email: detailEmail.trim(),
+          password: detailPassword,
+          picks: alloc,
+        }),
       });
-      setShowModal(false);
       if (res.ok) {
+        setShowModal(false);
         router.push(leaderboardPathFor(groupId));
         router.refresh();
       } else {
         const data = await res.json().catch(() => null);
-        setMsg({ tone: "error", text: data?.error || "Couldn't submit - check your connection and try again." });
+        setSubmitError(data?.error || "Couldn't submit - check your connection and try again.");
       }
     } catch {
-      setShowModal(false);
-      setMsg({ tone: "error", text: "Couldn't submit - check your connection and try again." });
+      setSubmitError("Couldn't reach the server - check your connection.");
     } finally {
       setBusy(false);
     }
@@ -259,9 +276,15 @@ export function RegularDraftClient({
 
       {showModal && (
         <ConfirmDetailsModal
-          defaultName={loaded?.name || preloaded?.name || ""}
-          defaultEntryName={loaded?.entryName || preloaded?.entryName || ""}
-          defaultEmail={loaded?.email || preloaded?.email || lookupEmail || ""}
+          name={detailName}
+          setName={setDetailName}
+          entryName={detailEntryName}
+          setEntryName={setDetailEntryName}
+          email={detailEmail}
+          setEmail={setDetailEmail}
+          password={detailPassword}
+          setPassword={setDetailPassword}
+          submitError={submitError}
           onCancel={() => setShowModal(false)}
           onConfirm={confirmSubmit}
           busy={busy}
