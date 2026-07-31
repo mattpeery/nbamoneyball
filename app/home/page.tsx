@@ -12,7 +12,7 @@ import { GroupPasswordGate } from "@/components/GroupPasswordGate";
 import { HomeLeaderboard } from "@/components/HomeLeaderboard";
 import { UserEntryCard } from "@/components/UserEntryCard";
 import { GroupHeaderControls } from "@/components/GroupHeaderControls";
-import { CountdownPill } from "@/components/ui";
+import { CalendarCountdown } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -71,18 +71,29 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
   const daysToSubmit = !isPlayoff ? daysUntil(teamdata.draftDeadline) : null;
   const daysToFirstWindow = daysUntil(teamdata.regular.firstWindowDate);
 
+  const countdowns = (
+    <>
+      {daysToSubmit !== null && <CalendarCountdown label="Submit deadline" days={daysToSubmit} />}
+      {daysToFirstWindow !== null && <CalendarCountdown label="1st add/drop window" days={daysToFirstWindow} />}
+    </>
+  );
+  const hasCountdowns = daysToSubmit !== null || daysToFirstWindow !== null;
+
   return (
     <div className="min-h-screen bg-[#F4F5F6] pb-10">
       <div className="px-4 pt-6 max-w-2xl mx-auto">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h1 className="font-display uppercase tracking-wide text-[40px] font-bold text-[#131518] leading-none">
             Leaderboard
           </h1>
-          {isPlayoff && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#CC0000] bg-[#CC0000]/8 border border-[#CC0000]/25 rounded-full px-2.5 py-1">
-              <Flag size={11} /> Playoffs
-            </span>
-          )}
+          <div className="flex items-center gap-2.5">
+            {hasCountdowns && <div className="hidden sm:flex items-center gap-2.5">{countdowns}</div>}
+            {isPlayoff && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#CC0000] bg-[#CC0000]/8 border border-[#CC0000]/25 rounded-full px-2.5 py-1">
+                <Flag size={11} /> Playoffs
+              </span>
+            )}
+          </div>
         </div>
 
         <GroupHeaderControls
@@ -91,12 +102,7 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
           memberGroups={memberGroups}
         />
 
-        {(daysToSubmit !== null || daysToFirstWindow !== null) && (
-          <div className="flex flex-wrap gap-2 mt-3">
-            {daysToSubmit !== null && <CountdownPill label="left to submit picks" days={daysToSubmit} />}
-            {daysToFirstWindow !== null && <CountdownPill label="until 1st add/drop window" days={daysToFirstWindow} />}
-          </div>
-        )}
+        {hasCountdowns && <div className="flex sm:hidden flex-wrap gap-2.5 mt-3">{countdowns}</div>}
 
         {myRow ? (
           <UserEntryCard row={myRow} rank={myIndex + 1} isPlayoff={isPlayoff} groupId={selected} editable={editable} />

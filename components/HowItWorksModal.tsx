@@ -29,7 +29,7 @@ export function HowItWorksModal({ onClose }: { onClose: () => void }) {
           Pick teams that will beat their projections for the best value.
         </p>
         <p className="text-[12.5px] text-[#3A3F45] leading-relaxed mb-3">
-          <span className="font-semibold text-[#131518]">Bonus:</span> during the season, you will have three
+          <span className="font-semibold text-[#131518]">Bonus:</span> During the season, you will have three
           24-hour windows to add/drop teams from your roster:
         </p>
         <ol className="space-y-1.5 mb-5 pl-4 list-decimal">

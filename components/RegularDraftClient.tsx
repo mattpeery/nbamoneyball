@@ -131,7 +131,7 @@ export function RegularDraftClient({
       setDetailName(data.player.name);
       setDetailEntryName(data.player.entryName);
       setDetailEmail(data.player.email);
-      setLookupMsg({ tone: "success", text: "Roster loaded - make changes and submit again to update it." });
+      setLookupMsg({ tone: "success", text: "Roster loaded - make changes and save again to update it." });
     } catch {
       setLookupMsg({ tone: "error", text: "Couldn't reach the server - check your connection." });
     } finally {
@@ -267,7 +267,7 @@ export function RegularDraftClient({
                 fullySpent ? "bg-[#16A34A] text-white disabled:opacity-50" : "bg-[#D1D5DB] text-[#9AA0A6]"
               }`}
             >
-              {busy ? "Submitting…" : "Submit Roster"}
+              {busy ? "Saving…" : "Save Roster"}
             </button>
             <p className="text-center text-[11px] text-[#6B7280] mt-1.5">Picks are editable until NBA Opening Day (Oct. 20)</p>
           </div>

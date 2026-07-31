@@ -87,7 +87,7 @@ export function BudgetBar({
             </div>
             {roster.length === 0 ? (
               <p className="text-[12px] text-[#9AA0A6] leading-relaxed">
-                Teams you add will appear here. You can easily remove/change picks before submitting.
+                Teams you add will appear here. You can easily remove/change picks before saving.
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -212,7 +212,7 @@ export function TeamCard({
               <Check size={11} className="mr-1" /> Owned
             </>
           ) : (
-            `Buy: ${usd(buyAmount)}`
+            `Add: ${usd(buyAmount)}`
           )}
         </button>
       </div>
@@ -281,7 +281,7 @@ export function LoadLookup({
     <div className="px-4 mb-3">
       {!open ? (
         <button onClick={() => setOpen(true)} className="text-[12.5px] text-[#6B7280] underline decoration-dotted">
-          Already submitted? Load your roster to edit it
+          Already saved? Load your roster to edit it
         </button>
       ) : (
         <div className="bg-white border border-[#DADFE3] rounded-xl p-3">
@@ -317,13 +317,18 @@ export function LoadLookup({
   );
 }
 
-export function CountdownPill({ label, days }: { label: string; days: number }) {
+export function CalendarCountdown({ label, days }: { label: string; days: number }) {
   return (
-    <div className="inline-flex items-center gap-1.5 bg-white border border-[#DADFE3] rounded-full pl-3 pr-3.5 py-1.5">
-      <span className="font-display text-[15px] font-bold text-[#131518] tabular-nums">{days}</span>
-      <span className="text-[11px] text-[#6B7280]">
-        {days === 1 ? "day" : "days"} {label}
-      </span>
+    <div className="flex flex-col items-center w-[62px]" title={`${days} ${days === 1 ? "day" : "days"} ${label}`}>
+      <div className="w-14 h-14 rounded-lg border border-[#DADFE3] bg-white shadow-sm overflow-hidden flex flex-col shrink-0">
+        <div className="bg-[#CC0000] text-white text-[7px] font-bold uppercase tracking-wide text-center py-1 leading-none">
+          Days
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <span className="font-display text-[20px] font-bold text-[#131518] leading-none tabular-nums">{days}</span>
+        </div>
+      </div>
+      <span className="text-[9.5px] text-[#6B7280] text-center mt-1 leading-tight">{label}</span>
     </div>
   );
 }

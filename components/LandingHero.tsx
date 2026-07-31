@@ -2,10 +2,12 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Flag } from "lucide-react";
 import { useCountdown } from "@/lib/useCountdown";
 import { AdminGateModal } from "./AdminGateModal";
 import { LoginModal } from "./LoginModal";
+import { JoinGroupModal } from "./JoinGroupModal";
 
 function CountUnit({ value, label }: { value: number; label: string }) {
   return (
@@ -23,10 +25,12 @@ export function LandingHero({
   draftDeadline: string;
   hasHero: boolean;
 }) {
+  const router = useRouter();
   const { d, h, m, s, done } = useCountdown(draftDeadline);
   const [tapCount, setTapCount] = useState(0);
   const [showAdminGate, setShowAdminGate] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function handleTitleTap() {
@@ -68,12 +72,20 @@ export function LandingHero({
         >
           Play Now
         </Link>
-        <button
-          onClick={() => setShowLogin(true)}
-          className="font-display uppercase tracking-wide mt-3 block w-full py-3 rounded-2xl bg-white border border-[#DADFE3] text-[#131518] text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
-        >
-          Log In
-        </button>
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => setShowLogin(true)}
+            className="font-display uppercase tracking-wide flex-1 py-3 rounded-2xl bg-white border border-[#DADFE3] text-[#131518] text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
+          >
+            Log In
+          </button>
+          <button
+            onClick={() => setShowJoin(true)}
+            className="font-display uppercase tracking-wide flex-1 py-3 rounded-2xl bg-white border border-[#DADFE3] text-[#131518] text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
+          >
+            Join Group
+          </button>
+        </div>
 
         <div className="mt-8 border border-[#DADFE3] bg-white rounded-2xl px-4 py-5 shadow-sm">
           <div className="text-center text-[11px] text-[#6B7280] uppercase tracking-wide mb-3">
@@ -99,6 +111,15 @@ export function LandingHero({
 
       {showAdminGate && <AdminGateModal onCancel={() => setShowAdminGate(false)} />}
       {showLogin && <LoginModal onCancel={() => setShowLogin(false)} />}
+      {showJoin && (
+        <JoinGroupModal
+          onCancel={() => setShowJoin(false)}
+          onSuccess={(groupId) => {
+            setShowJoin(false);
+            router.push(`/home?g=${groupId}`);
+          }}
+        />
+      )}
     </div>
   );
 }

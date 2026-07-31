@@ -274,7 +274,7 @@ export function PlayoffDraftClient({
               disabled={busy}
               className="font-display uppercase tracking-wide w-full bg-[#CC0000] text-white font-semibold text-[15px] rounded-xl py-3.5 disabled:opacity-50 active:scale-[0.99]"
             >
-              {busy ? "Submitting…" : "Submit Your Roster"}
+              {busy ? "Saving…" : "Save Roster"}
             </button>
           </div>
         </div>
