@@ -10,7 +10,6 @@ import { rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/f
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
-import { RosterSuccessModal } from "@/components/RosterSuccessModal";
 
 export function RegularDraftClient({
   teamdata,
@@ -44,7 +43,6 @@ export function RegularDraftClient({
   const [detailEmail, setDetailEmail] = useState(preloaded?.email || "");
   const [detailPassword, setDetailPassword] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   // Auto-open the How To Play popup the first time someone lands here.
   useEffect(() => {
@@ -168,12 +166,10 @@ export function RegularDraftClient({
       const data = await res.json().catch(() => null);
       if (res.ok) {
         setShowModal(false);
-        if (data?.isNew) {
-          setShowSuccess(true);
-        } else {
-          router.push(leaderboardPathFor(groupId));
-          router.refresh();
-        }
+        const base = leaderboardPathFor(groupId);
+        const url = data?.isNew ? `${base}${base.includes("?") ? "&" : "?"}new=1` : base;
+        router.push(url);
+        router.refresh();
       } else {
         setSubmitError(data?.error || "Couldn't submit - check your connection and try again.");
       }
@@ -294,17 +290,6 @@ export function RegularDraftClient({
           onCancel={() => setShowModal(false)}
           onConfirm={confirmSubmit}
           busy={busy}
-        />
-      )}
-
-      {showSuccess && (
-        <RosterSuccessModal
-          alloc={alloc}
-          prices={teamdata.regular.prices}
-          onContinue={() => {
-            router.push(leaderboardPathFor(groupId));
-            router.refresh();
-          }}
         />
       )}
     </div>

@@ -1,26 +1,35 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { teamLogoUrl } from "@/lib/logos";
-import { usd } from "@/lib/format";
+import { FULL_NAMES } from "@/lib/teams";
+import { Confetti } from "@/components/Confetti";
 
 export function RosterSuccessModal({
-  alloc,
-  prices,
-  onContinue,
+  teams,
+  onClose,
 }: {
-  alloc: Record<string, number>;
-  prices: Record<string, number>;
-  onContinue: () => void;
+  teams: string[];
+  onClose: () => void;
 }) {
-  const roster = Object.entries(alloc).filter(([, v]) => v > 0);
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
-      <div className="w-full max-w-sm bg-white border border-[#DADFE3] rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6" onClick={onClose}>
+      <Confetti />
+      <div
+        className="relative w-full max-w-sm bg-white border border-[#DADFE3] rounded-3xl p-6 max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#F4F5F6] flex items-center justify-center text-[#6B7280] hover:text-[#131518]"
+        >
+          <X size={16} />
+        </button>
+
         <div className="text-center">
-          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9AA0A6] mb-4">NBA Moneyball</div>
-          <div className="w-14 h-14 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-4">
+          <div className="text-[12px] font-semibold text-[#9AA0A6]">nbamoneyball.com</div>
+          <div className="w-14 h-14 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mt-4 mb-4">
             <Check size={28} className="text-[#16A34A]" strokeWidth={3} />
           </div>
           <h2 className="font-display uppercase tracking-wide text-[26px] font-bold text-[#131518] leading-tight">
@@ -29,24 +38,18 @@ export function RosterSuccessModal({
         </div>
 
         <div className="flex flex-wrap justify-center gap-2 mt-6">
-          {roster.map(([team, dollars]) => {
-            const price = prices[team] || 0;
-            const shares = price > 0 ? dollars / price : 1;
-            const fractional = shares < 0.995;
+          {teams.map((team) => {
             const logo = teamLogoUrl(team);
             return (
               <span
                 key={team}
-                className="inline-flex items-center gap-2 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-4 py-2.5 text-[18px] text-[#131518] font-semibold"
+                className="inline-flex items-center gap-2.5 bg-[#F4F5F6] border border-[#DADFE3] rounded-full pl-2.5 pr-5 py-2.5 text-[17px] font-semibold text-[#131518]"
               >
                 {logo && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={logo} alt="" className="w-10 h-10 object-contain shrink-0" />
+                  <img src={logo} alt="" className="w-9 h-9 object-contain shrink-0" />
                 )}
-                <span>
-                  {team} · {usd(dollars)}
-                </span>
-                {fractional && <span className="text-[#16A34A] font-medium text-[15px]">({shares.toFixed(2)})</span>}
+                <span>{FULL_NAMES[team] || team}</span>
               </span>
             );
           })}
@@ -57,10 +60,10 @@ export function RosterSuccessModal({
         </p>
 
         <button
-          onClick={onContinue}
+          onClick={onClose}
           className="font-display uppercase tracking-wide w-full mt-4 py-3.5 rounded-2xl bg-[#16A34A] text-white text-[15px] font-semibold active:scale-[0.98] transition-transform"
         >
-          View Leaderboard
+          Got it!
         </button>
       </div>
     </div>

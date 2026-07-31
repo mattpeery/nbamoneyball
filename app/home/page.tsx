@@ -13,6 +13,7 @@ import { HomeLeaderboard } from "@/components/HomeLeaderboard";
 import { UserEntryCard } from "@/components/UserEntryCard";
 import { GroupHeaderControls } from "@/components/GroupHeaderControls";
 import { CalendarCountdown } from "@/components/ui";
+import { RosterSuccessGate } from "@/components/RosterSuccessGate";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ function daysUntil(iso: string): number | null {
   return diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : null;
 }
 
-export default async function HomePage({ searchParams }: { searchParams: { g?: string } }) {
+export default async function HomePage({ searchParams }: { searchParams: { g?: string; new?: string } }) {
   const cookieStore = cookies();
 
   // Groups this browser has joined (valid signed cookies only).
@@ -126,6 +127,8 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
 
         <HomeLeaderboard rows={rows} isPlayoff={isPlayoff} />
       </div>
+
+      {searchParams.new === "1" && myRow && <RosterSuccessGate teams={myRow.basket.map((b) => b.team)} />}
     </div>
   );
 }
