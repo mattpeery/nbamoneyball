@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
   }
 
   const existingHash = await getPlayerPasswordHash(email);
+  const isNew = !existingHash;
   let passwordHash: string;
   if (existingHash) {
     if (!password || !verifyPassword(password, existingHash)) {
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
 
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
 
-  const res = NextResponse.json({ ok: true });
+  const res = NextResponse.json({ ok: true, isNew });
   res.cookies.set(IDENTITY_COOKIE_NAME, email.toLowerCase(), {
     httpOnly: false,
     sameSite: "lax",
