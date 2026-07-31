@@ -13,6 +13,18 @@ body {
   font-family: var(--font-display), system-ui, sans-serif;
 }
 
+/* iOS Safari auto-zooms into any focused input/select/textarea whose
+   font-size is under 16px. Force 16px on small viewports so filling out a
+   form doesn't trigger that zoom - desktop sizing (set per-component via
+   Tailwind) is untouched above the breakpoint. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 @keyframes confetti-burst {
   0% {
     transform: translate(0, 0) rotate(0deg);
