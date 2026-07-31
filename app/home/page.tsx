@@ -12,7 +12,6 @@ import { GroupPasswordGate } from "@/components/GroupPasswordGate";
 import { HomeLeaderboard } from "@/components/HomeLeaderboard";
 import { UserEntryCard } from "@/components/UserEntryCard";
 import { GroupHeaderControls } from "@/components/GroupHeaderControls";
-import { CalendarCountdown } from "@/components/ui";
 import { RosterSuccessGate } from "@/components/RosterSuccessGate";
 
 export const dynamic = "force-dynamic";
@@ -91,18 +90,6 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
     ? `Rosters are locked — ${daysToNextWindow} ${plural(daysToNextWindow)} until the next rebalancing window`
     : "Rosters are locked";
 
-  const countdowns = (
-    <>
-      {daysToSubmit !== null && <CalendarCountdown label="Submit deadline" days={daysToSubmit} />}
-      {daysToWindowClose !== null ? (
-        <CalendarCountdown label="Window closes" days={daysToWindowClose} />
-      ) : (
-        daysToNextWindow !== null && <CalendarCountdown label="Next add/drop window" days={daysToNextWindow} />
-      )}
-    </>
-  );
-  const hasCountdowns = daysToSubmit !== null || daysToWindowClose !== null || daysToNextWindow !== null;
-
   return (
     <div className="min-h-screen bg-[#F4F5F6] pb-10">
       <div className="px-4 pt-6 max-w-2xl mx-auto">
@@ -111,7 +98,6 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
             Leaderboard
           </h1>
           <div className="flex items-center gap-2.5">
-            {hasCountdowns && <div className="hidden sm:flex items-center gap-2.5">{countdowns}</div>}
             {isPlayoff && (
               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#CC0000] bg-[#CC0000]/8 border border-[#CC0000]/25 rounded-full px-2.5 py-1">
                 <Flag size={11} /> Playoffs
@@ -125,8 +111,6 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
           selectedName={selected === PUBLIC_GROUP_ID ? "Public" : memberGroups.find((g) => g.id === selected)?.name ?? selected}
           memberGroups={memberGroups}
         />
-
-        {hasCountdowns && <div className="flex sm:hidden flex-wrap gap-2.5 mt-3">{countdowns}</div>}
 
         {myRow ? (
           <UserEntryCard row={myRow} rank={myIndex + 1} isPlayoff={isPlayoff} groupId={selected} editable={editable} note={entryNote} />

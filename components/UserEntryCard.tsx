@@ -42,12 +42,12 @@ export function UserEntryCard({
           <Link className={GREEN_BTN} href={draftPathFor(groupId)}>
             Edit Picks
           </Link>
-          {note && <span className="text-[11.5px] text-[#6B7280]">{note}</span>}
+          {note && <span className="text-[11.5px] text-[#131518]">{note}</span>}
         </div>
       ) : (
         note && (
           <div className="border-t border-[#ECEEF0] px-4 py-3">
-            <span className="text-[11.5px] text-[#6B7280]">{note}</span>
+            <span className="text-[11.5px] text-[#131518]">{note}</span>
           </div>
         )
       )}

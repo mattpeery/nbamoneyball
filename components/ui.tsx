@@ -327,22 +327,6 @@ export function LoadLookup({
   );
 }
 
-export function CalendarCountdown({ label, days }: { label: string; days: number }) {
-  return (
-    <div className="flex flex-col items-center w-[62px]" title={`${days} ${days === 1 ? "day" : "days"} ${label}`}>
-      <div className="w-14 h-14 rounded-lg border border-[#DADFE3] bg-white shadow-sm overflow-hidden flex flex-col shrink-0">
-        <div className="bg-[#CC0000] text-white text-[7px] font-bold uppercase tracking-wide text-center py-1 leading-none">
-          Days
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <span className="font-display text-[20px] font-bold text-[#131518] leading-none tabular-nums">{days}</span>
-        </div>
-      </div>
-      <span className="text-[9.5px] text-[#6B7280] text-center mt-1 leading-tight">{label}</span>
-    </div>
-  );
-}
-
 export function Banner({ tone = "info", children }: { tone?: "info" | "error" | "success"; children: React.ReactNode }) {
   const styles =
     tone === "error"
