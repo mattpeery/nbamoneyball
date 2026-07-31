@@ -8,6 +8,7 @@ import { isPlayoffDraftOpen } from "@/lib/scoring";
 import { rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, PasswordInput, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
+import { ForgotPasswordModal } from "@/components/ForgotPasswordModal";
 
 type Unlocked = {
   myRegular: { name: string; entryName: string; email: string };
@@ -32,6 +33,7 @@ export function PlayoffDraftClient({
   const [password, setPassword] = useState("");
   const [unlockMsg, setUnlockMsg] = useState<string | null>(null);
   const [unlockBusy, setUnlockBusy] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
   const [alloc, setAlloc] = useState<Record<string, number>>({});
   const [msg, setMsg] = useState<{ tone: "error" | "success"; text: string } | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -216,6 +218,14 @@ export function PlayoffDraftClient({
               </Banner>
             </div>
           )}
+          <button
+            type="button"
+            onClick={() => setShowForgot(true)}
+            className="text-[11.5px] text-[#6B7280] underline decoration-dotted mt-2"
+          >
+            Forgot password?
+          </button>
+          {showForgot && <ForgotPasswordModal initialEmail={email} onClose={() => setShowForgot(false)} />}
         </div>
       )}
 

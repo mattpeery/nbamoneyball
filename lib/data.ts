@@ -159,6 +159,15 @@ export async function getPlayerPasswordHash(email: string): Promise<string | nul
   return (data as { password_hash?: string } | null)?.password_hash || null;
 }
 
+/** Overwrites a player's password hash (used by the forgot-password reset flow). No-op if they have no roster row yet. */
+export async function setPlayerPasswordHash(email: string, passwordHash: string): Promise<SaveResult> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return { ok: false, error: "Database isn't configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are unset)." };
+  const { error } = await supabase.from("players").update({ password_hash: passwordHash }).eq("id", slug(email));
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 /**
  * Saves a player's one and only regular-season roster. `groupId`, when given
  * and not the public pool, tags them as a member of that group (additively -

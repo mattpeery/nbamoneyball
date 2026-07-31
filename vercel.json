@@ -3,6 +3,10 @@
     {
       "path": "/api/sync-scores?daysBack=3",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/send-deadline-reminders",
+      "schedule": "0 14 * * *"
     }
   ]
 }

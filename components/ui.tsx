@@ -6,6 +6,7 @@ import { FULL_NAMES } from "@/lib/teams";
 import { usd } from "@/lib/format";
 import { teamLogoUrl } from "@/lib/logos";
 import { TeamInfoModal } from "@/components/TeamInfoModal";
+import { ForgotPasswordModal } from "@/components/ForgotPasswordModal";
 
 const CASH = "#16A34A";
 
@@ -277,6 +278,7 @@ export function LoadLookup({
   busy?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
   return (
     <div className="px-4 mb-3">
       {!open ? (
@@ -311,8 +313,16 @@ export function LoadLookup({
               {message.text}
             </p>
           )}
+          <button
+            type="button"
+            onClick={() => setShowForgot(true)}
+            className="text-[11.5px] text-[#6B7280] underline decoration-dotted mt-2"
+          >
+            Forgot password?
+          </button>
         </div>
       )}
+      {showForgot && <ForgotPasswordModal initialEmail={value} onClose={() => setShowForgot(false)} />}
     </div>
   );
 }

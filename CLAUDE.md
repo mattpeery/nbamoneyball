@@ -11,22 +11,29 @@ domain; without the key set, sends are skipped and logged instead (safe for
 local dev). `EMAIL_FROM` optionally overrides the from-address.
 
 Currently sent:
-- **Roster confirmation** — fired from `/api/players/regular` and
+- **Welcome / roster confirmation** — fired from `/api/players/regular` and
   `/api/players/playoff` on a player's *first* save only (not on edits), with
   their picks and a link back to the leaderboard.
+- **Password reset** — `/api/players/forgot-password` issues a signed,
+  1-hour-expiry token (`lib/passwordResetToken.ts`, HMAC-signed like the
+  admin/group session tokens, no DB storage) and emails a link to
+  `/reset-password?token=...`, which posts to `/api/players/reset-password`
+  to set a new `password_hash`. Always responds `{ok:true}` regardless of
+  whether the email has a roster, to avoid leaking which emails are
+  registered. "Forgot password?" links live in `LoadLookup` (ui.tsx), the
+  playoff email/password unlock step (`PlayoffDraftClient`), and
+  `ConfirmDetailsModal` (shown only after an incorrect-password error).
+  Requires `PASSWORD_RESET_SECRET`.
+- **Deadline reminder** ("Your picks lock tomorrow!") — `/api/send-deadline-reminders`,
+  a daily Vercel Cron job (`vercel.json`, same `CRON_SECRET` auth pattern as
+  `/api/sync-scores`). Fires once, in the 12-to-36-hour window before
+  `teamdata.draftDeadline`, to everyone with a saved regular roster;
+  idempotency is a `regular.deadlineReminderSentFor` field on `teamdata`
+  (sent-for-this-deadline marker, no schema migration needed — same pattern
+  as `firstWindowDate`) so it never double-sends for the same deadline.
 
 ## Planned / deferred work
 
-- **Password reset via email.** Roster passwords (`players.password_hash`, set at
-  submit time in `ConfirmDetailsModal`) currently have no recovery path if
-  forgotten — the only fallback is a manual reset by an admin directly in
-  Supabase. Now that the email system exists, this is the natural next
-  email to add.
-- **Deadline reminder email.** A "picks lock soon" nudge shortly before
-  `teamdata.draftDeadline`, sent to everyone with a saved roster (we have
-  their emails). Needs a Vercel Cron route (mirroring `/api/sync-scores`'s
-  `CRON_SECRET` pattern) plus a way to avoid double-sending — not built yet
-  since the deadline is months out.
 - **Abandoned-draft nudge.** Can't currently email someone who started
   picking teams but never saved, because email is only captured at final
   submit. Would need an earlier email-capture step in the draft flow.

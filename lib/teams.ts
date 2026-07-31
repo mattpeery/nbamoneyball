@@ -49,6 +49,9 @@ export type RegularTeamData = {
   locked: boolean;
   lastSyncedAt?: string;
   firstWindowDate: string;
+  // Set to the draftDeadline value the "picks lock tomorrow" reminder was
+  // last sent for, so the daily cron doesn't send it twice.
+  deadlineReminderSentFor?: string;
 };
 
 export type PlayoffTeamData = {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PasswordInput } from "@/components/ui";
+import { ForgotPasswordModal } from "@/components/ForgotPasswordModal";
 
 export function ConfirmDetailsModal({
   name,
@@ -31,6 +32,7 @@ export function ConfirmDetailsModal({
   busy?: boolean;
 }) {
   const [err, setErr] = useState<string | null>(null);
+  const [showForgot, setShowForgot] = useState(false);
 
   function confirm() {
     if (!name.trim()) return setErr("Name is required.");
@@ -82,7 +84,20 @@ export function ConfirmDetailsModal({
           Set this once, then use it to edit your picks later. At least 6 characters.
         </p>
 
-        {shownError && <div className="text-[12px] text-[#CC0000] mb-1">{shownError}</div>}
+        {shownError && (
+          <div className="mb-1">
+            <div className="text-[12px] text-[#CC0000]">{shownError}</div>
+            {shownError === "Incorrect password for this email." && (
+              <button
+                type="button"
+                onClick={() => setShowForgot(true)}
+                className="text-[11.5px] text-[#6B7280] underline decoration-dotted mt-1"
+              >
+                Forgot password?
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="flex gap-2 mt-4">
           <button onClick={onCancel} className="flex-1 py-3 rounded-xl bg-white border border-[#DADFE3] text-[#131518] text-[14px] font-medium active:scale-[0.98]">
@@ -97,6 +112,7 @@ export function ConfirmDetailsModal({
           </button>
         </div>
       </div>
+      {showForgot && <ForgotPasswordModal initialEmail={email} onClose={() => setShowForgot(false)} />}
     </div>
   );
 }

@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     });
     await sendEmail({
       to: email,
-      subject: "Your NBA Moneyball picks are in!",
+      subject: "Welcome to NBA Moneyball! Your picks are in",
       html: rosterConfirmationEmail({
         entryName,
         teamNames,
