@@ -3,9 +3,11 @@ import { getTeamData, upsertRegularPlayer, getPlayerPasswordHash } from "@/lib/d
 import { isRegularDraftOpen, validateRoster } from "@/lib/scoring";
 import { ALL_TEAMS, REG_BUDGET } from "@/lib/teams";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
-import { rosterErrorMessage, PUBLIC_GROUP_ID } from "@/lib/format";
+import { rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { sendEmail, rosterConfirmationEmail, SITE_URL } from "@/lib/email";
+import { FULL_NAMES } from "@/lib/teams";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -79,6 +81,26 @@ export async function POST(req: NextRequest) {
   );
 
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+
+  if (isNew) {
+    const teamNames = Object.keys(picks)
+      .filter((t) => picks[t] > 0)
+      .map((t) => FULL_NAMES[t] || t);
+    const deadlineLabel = new Date(teamdata.draftDeadline).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+    });
+    await sendEmail({
+      to: email,
+      subject: "Your NBA Moneyball picks are in!",
+      html: rosterConfirmationEmail({
+        entryName,
+        teamNames,
+        editableUntilLabel: `Picks can be edited until Opening Day (${deadlineLabel}).`,
+        leaderboardUrl: `${SITE_URL}${leaderboardPathFor(groupId)}`,
+      }),
+    });
+  }
 
   const res = NextResponse.json({ ok: true, isNew });
   res.cookies.set(IDENTITY_COOKIE_NAME, email.toLowerCase(), {

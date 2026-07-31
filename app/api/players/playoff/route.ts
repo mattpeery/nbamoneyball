@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTeamData, getRegularPlayerByEmail, getPlayerPasswordHash, upsertPlayoffPlayer } from "@/lib/data";
+import { getTeamData, getRegularPlayerByEmail, getPlayoffPlayerByEmail, getPlayerPasswordHash, upsertPlayoffPlayer } from "@/lib/data";
 import { isPlayoffDraftOpen, regularEarned, validateRoster } from "@/lib/scoring";
-import { ALL_TEAMS } from "@/lib/teams";
+import { ALL_TEAMS, FULL_NAMES } from "@/lib/teams";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
-import { rosterErrorMessage, PUBLIC_GROUP_ID } from "@/lib/format";
+import { rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
 import { verifyPassword } from "@/lib/password";
+import { sendEmail, rosterConfirmationEmail, SITE_URL } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -62,6 +63,8 @@ export async function POST(req: NextRequest) {
     .filter((v) => v > 0)
     .reduce((a, b) => a + b, 0);
 
+  const isNew = !(await getPlayoffPlayerByEmail(email));
+
   const result = await upsertPlayoffPlayer({
     name,
     entryName,
@@ -74,6 +77,22 @@ export async function POST(req: NextRequest) {
   });
 
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+
+  if (isNew) {
+    const teamNames = Object.keys(picks)
+      .filter((t) => picks[t] > 0)
+      .map((t) => FULL_NAMES[t] || t);
+    await sendEmail({
+      to: email,
+      subject: "Your NBA Moneyball playoff picks are in!",
+      html: rosterConfirmationEmail({
+        entryName,
+        teamNames,
+        editableUntilLabel: "You can change these until the playoff draft locks.",
+        leaderboardUrl: `${SITE_URL}${leaderboardPathFor(groupId)}`,
+      }),
+    });
+  }
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set(IDENTITY_COOKIE_NAME, email.toLowerCase(), {
