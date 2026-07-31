@@ -26,6 +26,25 @@ async function handle(req: NextRequest) {
   }
 
   const teamdata = await getTeamData();
+  const deadlineLabel = new Date(teamdata.draftDeadline).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+
+  // Admin-only preview: sends one sample email without touching the real
+  // window/idempotency logic below, so it's safe to run any time.
+  const testEmail = req.nextUrl.searchParams.get("testEmail");
+  if (testEmail) {
+    await sendEmail({
+      to: testEmail,
+      subject: "Your picks lock tomorrow!",
+      html: deadlineReminderEmail({
+        entryName: "Test Entry",
+        teamNames: ["Boston Celtics", "Denver Nuggets", "Golden State Warriors"],
+        deadlineLabel,
+        leaderboardUrl: `${SITE_URL}${leaderboardPathFor(PUBLIC_GROUP_ID)}`,
+      }),
+    });
+    return NextResponse.json({ ok: true, sent: 1, test: true });
+  }
+
   const hoursUntilDeadline = (new Date(teamdata.draftDeadline).getTime() - Date.now()) / (1000 * 60 * 60);
   const alreadySent = teamdata.regular.deadlineReminderSentFor === teamdata.draftDeadline;
 
@@ -36,7 +55,6 @@ async function handle(req: NextRequest) {
   }
 
   const players = await getRegularPlayers();
-  const deadlineLabel = new Date(teamdata.draftDeadline).toLocaleDateString("en-US", { month: "long", day: "numeric" });
 
   for (const player of players) {
     const teamNames = Object.keys(player.picks)
