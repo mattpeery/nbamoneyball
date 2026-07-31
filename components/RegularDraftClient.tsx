@@ -5,11 +5,15 @@ import { useRouter } from "next/navigation";
 import { Lock, ChevronDown } from "lucide-react";
 import { EAST, WEST, REG_BUDGET, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
-import { isRegularDraftOpen } from "@/lib/scoring";
+import { isRegularDraftOpen, getOpenAddDropWindow } from "@/lib/scoring";
 import { rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
+
+function formatWindowDate(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
 
 export function RegularDraftClient({
   teamdata,
@@ -25,6 +29,12 @@ export function RegularDraftClient({
   const router = useRouter();
 
   const [alloc, setAlloc] = useState<Record<string, number>>(preloaded?.picks || {});
+  // The player's own last-saved picks/prices, used to tell "a team they
+  // already held, untouched" (validates and displays at its old price)
+  // apart from "a new purchase" (uses today's live price) - matters once
+  // an admin reprices teams for an add/drop window.
+  const [basePicks, setBasePicks] = useState<Record<string, number>>(preloaded?.picks || {});
+  const [baseSnapshot, setBaseSnapshot] = useState<Record<string, number>>(preloaded?.priceSnapshot || {});
   const [msg, setMsg] = useState<{ tone: "error" | "success"; text: string } | null>(null);
   const [confOpen, setConfOpen] = useState({ East: true, West: true });
   const [showModal, setShowModal] = useState(false);
@@ -58,13 +68,41 @@ export function RegularDraftClient({
 
   const open = isRegularDraftOpen(teamdata);
   const locked = !open;
+  const pastDeadline = Date.now() > new Date(teamdata.draftDeadline).getTime();
+  const openWindow = pastDeadline ? getOpenAddDropWindow(teamdata) : null;
+
+  // A team's "reference price" - used for validation and display - is its
+  // OLD (last-saved) price if this session's dollar amount for it matches
+  // what was already saved, or today's live price if it's a new purchase
+  // (or a resell-and-rebuy). Takes the alloc map as a parameter rather than
+  // closing over `alloc` so it stays correct inside setAlloc's functional
+  // updaters, which operate on their own local copy across rapid clicks.
+  function priceRefFor(team: string, allocMap: Record<string, number>): number {
+    const dollars = allocMap[team] || 0;
+    const unchanged =
+      dollars > 0 &&
+      basePicks[team] !== undefined &&
+      Math.abs(dollars - basePicks[team]) <= 0.01 &&
+      baseSnapshot[team] !== undefined;
+    return unchanged ? baseSnapshot[team] : teamdata.regular.prices[team] || 0;
+  }
+
+  // Merged price map for display (BudgetBar chips, TeamCard) - live prices
+  // for everything, except currently-held-and-unchanged teams, which show
+  // their frozen old price instead.
+  const effectivePrices = useMemo(() => {
+    const merged = { ...teamdata.regular.prices };
+    for (const team of Object.keys(alloc)) merged[team] = priceRefFor(team, alloc);
+    return merged;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamdata.regular.prices, alloc, basePicks, baseSnapshot]);
 
   const spent = useMemo(() => Object.values(alloc).reduce((a, b) => a + b, 0), [alloc]);
   const remaining = REG_BUDGET - spent;
   const fullySpent = remaining <= 0.01;
   const distinctTeams = Object.values(alloc).filter((v) => v > 0).length;
   const hasFractional = Object.entries(alloc).some(
-    ([t, v]) => v > 0 && v < (teamdata.regular.prices[t] || 0) - 0.01
+    ([t, v]) => v > 0 && v < (effectivePrices[t] || 0) - 0.01
   );
 
   // Removing any team makes an existing fractional pick's remainder stale
@@ -73,7 +111,7 @@ export function RegularDraftClient({
     const next = { ...a };
     delete next[team];
     for (const [t, v] of Object.entries(next)) {
-      if (v > 0 && v < (teamdata.regular.prices[t] || 0) - 0.01) delete next[t];
+      if (v > 0 && v < priceRefFor(t, next) - 0.01) delete next[t];
     }
     return next;
   }
@@ -88,7 +126,7 @@ export function RegularDraftClient({
       const currentSpent = Object.values(a).reduce((s, v) => s + v, 0);
       const currentRemaining = REG_BUDGET - currentSpent;
       const currentHasFractional = Object.entries(a).some(
-        ([t, v]) => v > 0 && v < (teamdata.regular.prices[t] || 0) - 0.01
+        ([t, v]) => v > 0 && v < priceRefFor(t, a) - 0.01
       );
 
       if (currentRemaining >= price) {
@@ -128,6 +166,8 @@ export function RegularDraftClient({
         return;
       }
       setAlloc(data.player.picks || {});
+      setBasePicks(data.player.picks || {});
+      setBaseSnapshot(data.player.priceSnapshot || {});
       setDetailName(data.player.name);
       setDetailEntryName(data.player.entryName);
       setDetailEmail(data.player.email);
@@ -209,12 +249,20 @@ export function RegularDraftClient({
           />
         )}
       </div>
-      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} prices={teamdata.regular.prices} onRemove={removeTeam} onClearAll={clearAll} />
+      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} prices={effectivePrices} onRemove={removeTeam} onClearAll={clearAll} />
 
       {locked && (
         <div className="mt-3 max-w-2xl mx-auto">
           <Banner>
             <Lock size={13} /> Draft is locked - picks are view-only.
+          </Banner>
+        </div>
+      )}
+
+      {!locked && openWindow && (
+        <div className="mt-3 max-w-2xl mx-auto">
+          <Banner>
+            <Check size={13} /> Add/drop window open — trade your roster until {formatWindowDate(openWindow.closesAt)}.
           </Banner>
         </div>
       )}
@@ -237,7 +285,7 @@ export function RegularDraftClient({
                   <TeamCard
                     key={t}
                     team={t}
-                    price={teamdata.regular.prices[t]}
+                    price={effectivePrices[t]}
                     owned={(alloc[t] || 0) > 0}
                     paidAmount={alloc[t] || 0}
                     onToggle={toggleTeam}
@@ -271,7 +319,11 @@ export function RegularDraftClient({
             >
               {busy ? "Saving…" : "Save Roster"}
             </button>
-            <p className="text-center text-[11px] text-[#6B7280] mt-1.5">Picks are editable until NBA Opening Day (Oct. 20)</p>
+            <p className="text-center text-[11px] text-[#6B7280] mt-1.5">
+              {openWindow
+                ? `Add/drop window closes ${formatWindowDate(openWindow.closesAt)}`
+                : "Picks are editable until NBA Opening Day (Oct. 20)"}
+            </p>
           </div>
         </div>
       )}

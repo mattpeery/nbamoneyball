@@ -5,7 +5,7 @@ import { getGroupById, type Group } from "@/lib/groups";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
 import { getTeamData, getRegularPlayers, getPlayoffPlayers, getRegularPlayersForGroup, getPlayoffPlayersForGroup } from "@/lib/data";
 import { buildLeaderboard } from "@/lib/leaderboard";
-import { isPlayoffDraftOpen, isRegularDraftOpen } from "@/lib/scoring";
+import { isPlayoffDraftOpen, isRegularDraftOpen, getOpenAddDropWindow, getNextAddDropWindow } from "@/lib/scoring";
 import { slug, PUBLIC_GROUP_ID, draftPathFor } from "@/lib/format";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { GroupPasswordGate } from "@/components/GroupPasswordGate";
@@ -70,15 +70,22 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
   const editable = isPlayoff ? isPlayoffDraftOpen(teamdata) : isRegularDraftOpen(teamdata);
 
   const daysToSubmit = !isPlayoff ? daysUntil(teamdata.draftDeadline) : null;
-  const daysToFirstWindow = daysUntil(teamdata.regular.firstWindowDate);
+  const openWindow = !isPlayoff ? getOpenAddDropWindow(teamdata) : null;
+  const nextWindow = !isPlayoff && !openWindow ? getNextAddDropWindow(teamdata) : null;
+  const daysToWindowClose = openWindow ? daysUntil(openWindow.closesAt) : null;
+  const daysToNextWindow = nextWindow ? daysUntil(nextWindow.opensAt) : null;
 
   const countdowns = (
     <>
       {daysToSubmit !== null && <CalendarCountdown label="Submit deadline" days={daysToSubmit} />}
-      {daysToFirstWindow !== null && <CalendarCountdown label="1st add/drop window" days={daysToFirstWindow} />}
+      {daysToWindowClose !== null ? (
+        <CalendarCountdown label="Window closes" days={daysToWindowClose} />
+      ) : (
+        daysToNextWindow !== null && <CalendarCountdown label="Next add/drop window" days={daysToNextWindow} />
+      )}
     </>
   );
-  const hasCountdowns = daysToSubmit !== null || daysToFirstWindow !== null;
+  const hasCountdowns = daysToSubmit !== null || daysToWindowClose !== null || daysToNextWindow !== null;
 
   return (
     <div className="min-h-screen bg-[#F4F5F6] pb-10">

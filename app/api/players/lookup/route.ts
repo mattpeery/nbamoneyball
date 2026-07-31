@@ -23,7 +23,13 @@ export async function POST(req: NextRequest) {
 
   const res = NextResponse.json({
     ok: true,
-    player: { name: player.name, entryName: player.entryName, email: player.email, picks: player.picks },
+    player: {
+      name: player.name,
+      entryName: player.entryName,
+      email: player.email,
+      picks: player.picks,
+      priceSnapshot: player.priceSnapshot,
+    },
   });
   res.cookies.set(IDENTITY_COOKIE_NAME, email.toLowerCase(), {
     httpOnly: false,

@@ -1,4 +1,4 @@
-import type { TeamData } from "./teams";
+import type { AddDropWindow, TeamData } from "./teams";
 
 export type PlayerRecord = {
   name: string;
@@ -48,7 +48,30 @@ export function playoffPoints(record: PlayoffPlayerRecord | PlayerRecord | null 
 
 export function isRegularDraftOpen(teamdata: TeamData): boolean {
   if (teamdata.regular.locked) return false;
-  return Date.now() < new Date(teamdata.draftDeadline).getTime();
+  const now = Date.now();
+  if (now < new Date(teamdata.draftDeadline).getTime()) return true;
+  return teamdata.regular.addDropWindows.some(
+    (w) => now >= new Date(w.opensAt).getTime() && now <= new Date(w.closesAt).getTime()
+  );
+}
+
+/** The add/drop window currently open, if any (independent of the `locked` override). */
+export function getOpenAddDropWindow(teamdata: TeamData): AddDropWindow | null {
+  const now = Date.now();
+  return (
+    teamdata.regular.addDropWindows.find(
+      (w) => now >= new Date(w.opensAt).getTime() && now <= new Date(w.closesAt).getTime()
+    ) || null
+  );
+}
+
+/** The soonest upcoming add/drop window, if any. */
+export function getNextAddDropWindow(teamdata: TeamData): AddDropWindow | null {
+  const now = Date.now();
+  const upcoming = teamdata.regular.addDropWindows
+    .filter((w) => new Date(w.opensAt).getTime() > now)
+    .sort((a, b) => new Date(a.opensAt).getTime() - new Date(b.opensAt).getTime());
+  return upcoming[0] || null;
 }
 
 export function isPlayoffDraftOpen(teamdata: TeamData): boolean {

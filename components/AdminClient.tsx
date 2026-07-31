@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { ALL_TEAMS, ROUND_LABELS, type TeamData } from "@/lib/teams";
 import { Collapsible, ToggleRow, NumField, Banner } from "@/components/ui";
 
@@ -131,20 +131,75 @@ export function AdminClient({ teamdata }: { teamdata: TeamData }) {
           onChange={(v) => setLocal((l) => ({ ...l, regular: { ...l.regular, locked: v } }))}
         />
         <div className="px-4 py-3.5 border-b border-[#ECEEF0]">
-          <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">1st add/drop window opens</label>
-          <input
-            type="datetime-local"
-            value={toDatetimeLocalValue(local.regular.firstWindowDate)}
-            onChange={(e) => {
-              const iso = new Date(e.target.value).toISOString();
-              setLocal((l) => ({ ...l, regular: { ...l.regular, firstWindowDate: iso } }));
-            }}
-            className="w-full mt-1.5 px-3.5 py-2.5 rounded-xl bg-white border border-[#DADFE3] text-[14px] text-[#131518] outline-none"
-          />
-          <p className="text-[11px] text-[#6B7280] mt-1.5">
-            Drives the "days until 1st add/drop window" countdown on the leaderboard. Update once the real schedule
-            (roughly when teams hit 5 games played) is known.
+          <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">Add/drop windows</label>
+          <p className="text-[11px] text-[#6B7280] mt-1 mb-2.5">
+            Reopens the draft for trading between these dates - drives the leaderboard countdown too. Set new prices
+            below before each one opens.
           </p>
+          {local.regular.addDropWindows.map((w, i) => (
+            <div key={i} className="flex items-end gap-2 mb-2">
+              <div className="flex-1">
+                <label className="text-[10px] text-[#9AA0A6]">Opens</label>
+                <input
+                  type="datetime-local"
+                  value={toDatetimeLocalValue(w.opensAt)}
+                  onChange={(e) => {
+                    const iso = new Date(e.target.value).toISOString();
+                    setLocal((l) => {
+                      const windows = [...l.regular.addDropWindows];
+                      windows[i] = { ...windows[i], opensAt: iso };
+                      return { ...l, regular: { ...l.regular, addDropWindows: windows } };
+                    });
+                  }}
+                  className="w-full mt-1 px-3 py-2 rounded-lg bg-white border border-[#DADFE3] text-[13px] text-[#131518] outline-none"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-[10px] text-[#9AA0A6]">Closes</label>
+                <input
+                  type="datetime-local"
+                  value={toDatetimeLocalValue(w.closesAt)}
+                  onChange={(e) => {
+                    const iso = new Date(e.target.value).toISOString();
+                    setLocal((l) => {
+                      const windows = [...l.regular.addDropWindows];
+                      windows[i] = { ...windows[i], closesAt: iso };
+                      return { ...l, regular: { ...l.regular, addDropWindows: windows } };
+                    });
+                  }}
+                  className="w-full mt-1 px-3 py-2 rounded-lg bg-white border border-[#DADFE3] text-[13px] text-[#131518] outline-none"
+                />
+              </div>
+              <button
+                onClick={() =>
+                  setLocal((l) => ({
+                    ...l,
+                    regular: { ...l.regular, addDropWindows: l.regular.addDropWindows.filter((_, wi) => wi !== i) },
+                  }))
+                }
+                className="w-9 h-9 rounded-lg border border-[#DADFE3] flex items-center justify-center text-[#6B7280] shrink-0"
+                aria-label="Remove window"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => {
+              const opensAt = new Date();
+              const closesAt = new Date(opensAt.getTime() + 3 * 24 * 60 * 60 * 1000);
+              setLocal((l) => ({
+                ...l,
+                regular: {
+                  ...l.regular,
+                  addDropWindows: [...l.regular.addDropWindows, { opensAt: opensAt.toISOString(), closesAt: closesAt.toISOString() }],
+                },
+              }));
+            }}
+            className="text-[12.5px] text-[#CC0000] font-medium underline decoration-dotted"
+          >
+            + Add window
+          </button>
         </div>
         <div className="px-4 py-3.5 border-b border-[#ECEEF0]">
           <div className="text-[13.5px] text-[#131518] font-medium">Score sync</div>

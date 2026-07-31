@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTeamData, upsertRegularPlayer, getPlayerPasswordHash } from "@/lib/data";
+import { getTeamData, upsertRegularPlayer, getPlayerPasswordHash, getRegularPlayerByEmail } from "@/lib/data";
 import { isRegularDraftOpen, validateRoster } from "@/lib/scoring";
 import { ALL_TEAMS, REG_BUDGET } from "@/lib/teams";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
@@ -57,7 +57,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "The regular-season draft is locked." }, { status: 423 });
   }
 
-  const validationError = validateRoster(picks, REG_BUDGET, teamdata.regular.prices);
+  // A team a player already held keeps validating (and gets snapshotted)
+  // against its OLD price, not today's live price - otherwise an admin
+  // repricing teams for an add/drop window would break every existing
+  // holder's roster the next time they save anything, even teams they
+  // never touched. Only a genuinely new/changed dollar amount for a team
+  // uses today's live price.
+  const existing = isNew ? null : await getRegularPlayerByEmail(email);
+  const oldPicks = existing?.picks || {};
+  const oldSnapshot = existing?.priceSnapshot || {};
+
+  const effectivePrices = { ...teamdata.regular.prices };
+  for (const [team, dollars] of Object.entries(picks)) {
+    const unchanged = dollars > 0 && oldPicks[team] !== undefined && Math.abs(dollars - oldPicks[team]) <= 0.01;
+    if (unchanged) effectivePrices[team] = dollars;
+  }
+
+  const validationError = validateRoster(picks, REG_BUDGET, effectivePrices);
   if (validationError) {
     return NextResponse.json({ error: rosterErrorMessage(validationError) }, { status: 400 });
   }
@@ -66,6 +82,13 @@ export async function POST(req: NextRequest) {
     .filter((v) => v > 0)
     .reduce((a, b) => a + b, 0);
 
+  const priceSnapshot: Record<string, number> = {};
+  for (const [team, dollars] of Object.entries(picks)) {
+    if (!(dollars > 0)) continue;
+    const unchanged = oldPicks[team] !== undefined && Math.abs(dollars - oldPicks[team]) <= 0.01 && oldSnapshot[team] !== undefined;
+    priceSnapshot[team] = unchanged ? oldSnapshot[team] : teamdata.regular.prices[team];
+  }
+
   const result = await upsertRegularPlayer(
     {
       name,
@@ -73,7 +96,7 @@ export async function POST(req: NextRequest) {
       email,
       picks,
       spent,
-      priceSnapshot: teamdata.regular.prices,
+      priceSnapshot,
       updatedAt: Date.now(),
     },
     passwordHash,
