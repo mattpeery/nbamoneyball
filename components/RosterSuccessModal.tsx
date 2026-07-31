@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
 import { teamLogoUrl } from "@/lib/logos";
 import { FULL_NAMES } from "@/lib/teams";
-import { Confetti } from "@/components/Confetti";
+import { Confetti, type ConfettiOrigin } from "@/components/Confetti";
 
 export function RosterSuccessModal({
   teams,
@@ -12,10 +13,20 @@ export function RosterSuccessModal({
   teams: string[];
   onClose: () => void;
 }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [confettiOrigin, setConfettiOrigin] = useState<ConfettiOrigin | null>(null);
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setConfettiOrigin({ left: rect.left, right: rect.right, y: rect.top + rect.height * 0.5 });
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6" onClick={onClose}>
-      <Confetti />
+      {confettiOrigin && <Confetti origin={confettiOrigin} />}
       <div
+        ref={cardRef}
         className="relative w-full max-w-sm bg-white border border-[#DADFE3] rounded-3xl p-6 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
