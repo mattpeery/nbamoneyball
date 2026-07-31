@@ -13,12 +13,14 @@ export function UserEntryCard({
   isPlayoff,
   groupId,
   editable,
+  note,
 }: {
   row: LeaderboardRow;
   rank: number;
   isPlayoff: boolean;
   groupId: string;
   editable: boolean;
+  note?: string | null;
 }) {
   return (
     <div className="mt-4 bg-white border border-[#16A34A]/40 rounded-2xl overflow-hidden">
@@ -35,12 +37,19 @@ export function UserEntryCard({
         <div className="text-[13px] font-bold text-[#131518]">{isPlayoff ? row.score.toFixed(1) : Math.round(row.score)}</div>
         <div className="text-[12px] text-[#6B7280]">#{rank}</div>
       </div>
-      {editable && (
-        <div className="border-t border-[#ECEEF0] px-4 py-3 flex flex-wrap gap-2">
+      {editable ? (
+        <div className="border-t border-[#ECEEF0] px-4 py-3 flex flex-wrap items-center gap-2">
           <Link className={GREEN_BTN} href={draftPathFor(groupId)}>
             Edit Picks
           </Link>
+          {note && <span className="text-[11.5px] text-[#6B7280]">{note}</span>}
         </div>
+      ) : (
+        note && (
+          <div className="border-t border-[#ECEEF0] px-4 py-3">
+            <span className="text-[11.5px] text-[#6B7280]">{note}</span>
+          </div>
+        )
       )}
     </div>
   );

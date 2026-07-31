@@ -75,6 +75,22 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
   const daysToWindowClose = openWindow ? daysUntil(openWindow.closesAt) : null;
   const daysToNextWindow = nextWindow ? daysUntil(nextWindow.opensAt) : null;
 
+  // Editable because of a currently-open window vs. still-before-the-initial-
+  // deadline both need "days left to lock" - just pointed at whichever
+  // boundary is actually the reason picks are open right now.
+  const pastDeadline = Date.now() > new Date(teamdata.draftDeadline).getTime();
+  const daysToLock = !isPlayoff ? (pastDeadline ? daysToWindowClose : daysToSubmit) : null;
+  const plural = (n: number) => (n === 1 ? "day" : "days");
+  const entryNote = isPlayoff
+    ? null
+    : editable
+    ? daysToLock !== null
+      ? `${daysToLock} ${plural(daysToLock)} left to lock your picks`
+      : null
+    : daysToNextWindow !== null
+    ? `Rosters are locked — ${daysToNextWindow} ${plural(daysToNextWindow)} until the next rebalancing window`
+    : "Rosters are locked";
+
   const countdowns = (
     <>
       {daysToSubmit !== null && <CalendarCountdown label="Submit deadline" days={daysToSubmit} />}
@@ -113,7 +129,7 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
         {hasCountdowns && <div className="flex sm:hidden flex-wrap gap-2.5 mt-3">{countdowns}</div>}
 
         {myRow ? (
-          <UserEntryCard row={myRow} rank={myIndex + 1} isPlayoff={isPlayoff} groupId={selected} editable={editable} />
+          <UserEntryCard row={myRow} rank={myIndex + 1} isPlayoff={isPlayoff} groupId={selected} editable={editable} note={entryNote} />
         ) : (
           editable && (
             <div className="mt-4 bg-white border border-[#DADFE3] rounded-2xl p-4 text-center">
