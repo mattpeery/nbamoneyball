@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-const COLORS = ["#CC0000", "#16A34A", "#F5B400", "#2563EB", "#7C3AED"];
+const COLORS = ["#16A34A", "#FFFFFF", "#4ADE80", "#FFFFFF"];
 
 export type ConfettiOrigin = { left: number; right: number; y: number };
 
@@ -64,6 +64,7 @@ export function Confetti({
               width: p.width,
               height: p.height,
               backgroundColor: p.color,
+              boxShadow: p.color === "#FFFFFF" ? "0 0 0 1px rgba(19,21,24,0.12)" : undefined,
               animationDelay: `${p.delay}s`,
               animationDuration: `${p.duration}s`,
               "--x1": `${p.x1}px`,
