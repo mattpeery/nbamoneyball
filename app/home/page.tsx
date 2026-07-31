@@ -12,10 +12,17 @@ import { GroupPasswordGate } from "@/components/GroupPasswordGate";
 import { HomeLeaderboard } from "@/components/HomeLeaderboard";
 import { UserEntryCard } from "@/components/UserEntryCard";
 import { GroupHeaderControls } from "@/components/GroupHeaderControls";
+import { CountdownPill } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
 const GROUP_COOKIE_PREFIX = "nba_group_";
+
+/** Whole days until an ISO date, or null once it's passed. */
+function daysUntil(iso: string): number | null {
+  const diff = new Date(iso).getTime() - Date.now();
+  return diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : null;
+}
 
 export default async function HomePage({ searchParams }: { searchParams: { g?: string } }) {
   const cookieStore = cookies();
@@ -61,6 +68,9 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
   const myRow = myIndex >= 0 ? rows[myIndex] : null;
   const editable = isPlayoff ? isPlayoffDraftOpen(teamdata) : isRegularDraftOpen(teamdata);
 
+  const daysToSubmit = !isPlayoff ? daysUntil(teamdata.draftDeadline) : null;
+  const daysToFirstWindow = daysUntil(teamdata.regular.firstWindowDate);
+
   return (
     <div className="min-h-screen bg-[#F4F5F6] pb-10">
       <div className="px-4 pt-6 max-w-2xl mx-auto">
@@ -80,6 +90,13 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
           selectedName={selected === PUBLIC_GROUP_ID ? "Public" : memberGroups.find((g) => g.id === selected)?.name ?? selected}
           memberGroups={memberGroups}
         />
+
+        {(daysToSubmit !== null || daysToFirstWindow !== null) && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {daysToSubmit !== null && <CountdownPill label="left to submit picks" days={daysToSubmit} />}
+            {daysToFirstWindow !== null && <CountdownPill label="until 1st add/drop window" days={daysToFirstWindow} />}
+          </div>
+        )}
 
         {myRow ? (
           <UserEntryCard row={myRow} rank={myIndex + 1} isPlayoff={isPlayoff} groupId={selected} editable={editable} />

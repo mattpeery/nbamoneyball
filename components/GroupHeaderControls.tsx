@@ -105,8 +105,8 @@ export function GroupHeaderControls({
         <CreateGroupModal
           onCancel={() => setShowCreate(false)}
           onSuccess={(newGroupId) => {
+            setShowCreate(false);
             router.push(`/g/${newGroupId}/invite`);
-            router.refresh();
           }}
         />
       )}
@@ -114,8 +114,8 @@ export function GroupHeaderControls({
         <JoinGroupModal
           onCancel={() => setShowJoin(false)}
           onSuccess={(joinedGroupId) => {
+            setShowJoin(false);
             router.push(`/home?g=${joinedGroupId}`);
-            router.refresh();
           }}
         />
       )}

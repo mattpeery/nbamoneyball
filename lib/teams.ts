@@ -26,6 +26,10 @@ export const REG_BUDGET = 164;
 export const ROUND_LABELS = ["Rd 1", "Rd 2", "Conf Finals", "Finals"];
 export const DEFAULT_MULTIPLIERS = [1, 2, 3, 4];
 export const DEFAULT_DRAFT_DEADLINE = "2026-10-20T00:00:00-04:00";
+// Placeholder - the real "Overreaction" window date depends on the actual
+// schedule (roughly when teams hit 5 games played); set the real date in
+// the admin panel once the schedule is out.
+export const DEFAULT_FIRST_WINDOW_DATE = "2026-11-03T00:00:00-04:00";
 
 export const FULL_NAMES: Record<string, string> = {
   Celtics: "Boston Celtics", Nets: "Brooklyn Nets", Knicks: "New York Knicks", "76ers": "Philadelphia 76ers",
@@ -44,6 +48,7 @@ export type RegularTeamData = {
   wins: Record<string, number>;
   locked: boolean;
   lastSyncedAt?: string;
+  firstWindowDate: string;
 };
 
 export type PlayoffTeamData = {
@@ -69,6 +74,7 @@ export function defaultTeamData(): TeamData {
       prices: { ...DEFAULT_PRICES },
       wins: Object.fromEntries(ALL_TEAMS.map((t) => [t, 0])),
       locked: false,
+      firstWindowDate: DEFAULT_FIRST_WINDOW_DATE,
     },
     playoff: {
       teams: Object.fromEntries(ALL_TEAMS.map((t) => [t, false])),

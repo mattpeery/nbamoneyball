@@ -28,7 +28,6 @@ export default function JoinByNamePage({ params }: { params: { name: string } })
         return;
       }
       router.push(`/home?g=${data.groupId}`);
-      router.refresh();
     } catch {
       setErr("Couldn't reach the server - check your connection.");
       setBusy(false);

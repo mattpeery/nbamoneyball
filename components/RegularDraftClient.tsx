@@ -181,7 +181,7 @@ export function RegularDraftClient({
   return (
     <div className="pb-32">
       <div className="px-4 pt-6 pb-1 max-w-2xl mx-auto">
-        <h1 className="font-display uppercase tracking-wide text-[22px] font-bold text-[#131518]">Pick Your Teams</h1>
+        <h1 className="font-display uppercase tracking-wide text-[40px] font-bold text-[#131518] leading-none">Pick Your Teams</h1>
         {groupId !== PUBLIC_GROUP_ID && <p className="text-[12.5px] text-[#6B7280] mt-1">{groupName}</p>}
         <button
           onClick={() => setShowHowItWorks(true)}

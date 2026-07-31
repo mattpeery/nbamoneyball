@@ -1,13 +1,14 @@
 import "server-only";
 import { getSupabaseAdmin } from "./supabaseAdmin";
-import { defaultTeamData, type TeamData } from "./teams";
+import { defaultTeamData, DEFAULT_FIRST_WINDOW_DATE, type TeamData } from "./teams";
 import type { PlayerRecord, PlayoffPlayerRecord } from "./scoring";
 import { slug, PUBLIC_GROUP_ID } from "./format";
 
 type TeamdataRow = {
   id: number;
   phase: "regular" | "playoff";
-  regular: TeamData["regular"];
+  // firstWindowDate optional - older saved rows predate it.
+  regular: Omit<TeamData["regular"], "firstWindowDate"> & { firstWindowDate?: string };
   playoff: TeamData["playoff"];
   draft_deadline: string;
 };
@@ -16,7 +17,8 @@ function rowToTeamData(row: TeamdataRow): TeamData {
   return {
     phase: row.phase,
     draftDeadline: row.draft_deadline,
-    regular: row.regular,
+    // Older saved rows predate firstWindowDate - fall back so they don't break.
+    regular: { firstWindowDate: DEFAULT_FIRST_WINDOW_DATE, ...row.regular },
     playoff: row.playoff,
   };
 }

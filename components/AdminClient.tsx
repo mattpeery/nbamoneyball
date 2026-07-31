@@ -131,6 +131,22 @@ export function AdminClient({ teamdata }: { teamdata: TeamData }) {
           onChange={(v) => setLocal((l) => ({ ...l, regular: { ...l.regular, locked: v } }))}
         />
         <div className="px-4 py-3.5 border-b border-[#ECEEF0]">
+          <label className="text-[11px] uppercase tracking-wider text-[#6B7280]">1st add/drop window opens</label>
+          <input
+            type="datetime-local"
+            value={toDatetimeLocalValue(local.regular.firstWindowDate)}
+            onChange={(e) => {
+              const iso = new Date(e.target.value).toISOString();
+              setLocal((l) => ({ ...l, regular: { ...l.regular, firstWindowDate: iso } }));
+            }}
+            className="w-full mt-1.5 px-3.5 py-2.5 rounded-xl bg-white border border-[#DADFE3] text-[14px] text-[#131518] outline-none"
+          />
+          <p className="text-[11px] text-[#6B7280] mt-1.5">
+            Drives the "days until 1st add/drop window" countdown on the leaderboard. Update once the real schedule
+            (roughly when teams hit 5 games played) is known.
+          </p>
+        </div>
+        <div className="px-4 py-3.5 border-b border-[#ECEEF0]">
           <div className="text-[13.5px] text-[#131518] font-medium">Score sync</div>
           <div className="text-[11.5px] text-[#6B7280] mt-0.5">
             Pulls final scores from balldontlie.io and recomputes every team's win total below. Runs automatically

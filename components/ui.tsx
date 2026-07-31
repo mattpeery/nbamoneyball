@@ -191,7 +191,7 @@ export function TeamCard({
             </span>
             <button
               onClick={() => setShowInfo(true)}
-              className="shrink-0 text-[#9AA0A6] hover:text-[#6B7280]"
+              className="shrink-0 text-[#6B7280] hover:text-[#131518]"
               aria-label={`About the ${team}`}
             >
               <Info size={14} />
@@ -313,6 +313,17 @@ export function LoadLookup({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+export function CountdownPill({ label, days }: { label: string; days: number }) {
+  return (
+    <div className="inline-flex items-center gap-1.5 bg-white border border-[#DADFE3] rounded-full pl-3 pr-3.5 py-1.5">
+      <span className="font-display text-[15px] font-bold text-[#131518] tabular-nums">{days}</span>
+      <span className="text-[11px] text-[#6B7280]">
+        {days === 1 ? "day" : "days"} {label}
+      </span>
     </div>
   );
 }
