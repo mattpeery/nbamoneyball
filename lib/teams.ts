@@ -10,13 +10,14 @@ export const ALL_TEAMS = [...EAST, ...WEST];
 
 // Vegas-projected regular-season win totals, shown alongside price on the
 // draft screen. Static reference data, not derived from anything else.
+// Source: BetMGM 2026-27 season win-total odds.
 export const PROJECTED_WINS: Record<string, number> = {
-  Thunder: 61.5, Spurs: 60.5, Nuggets: 49.5, Timberwolves: 48.5, Rockets: 47.5, Lakers: 44.5,
-  "Trail Blazers": 43.5, Warriors: 40.5, Suns: 38.5, Jazz: 35.5, Mavericks: 34.5, Pelicans: 29.5,
-  Clippers: 28.5, Grizzlies: 28.5, Kings: 22.5,
-  Knicks: 52.5, Celtics: 50.5, Pistons: 50.5, Cavaliers: 47.5, "76ers": 47.5, Heat: 45.5,
-  Raptors: 45.5, Pacers: 44.5, Magic: 43.5, Hawks: 42.5, Hornets: 37.5, Wizards: 35.5,
-  Bucks: 26.5, Bulls: 25.5, Nets: 19.5,
+  Thunder: 60.5, Spurs: 59.5, Nuggets: 49.5, Timberwolves: 49.5, Rockets: 47.5, Lakers: 46.5,
+  "Trail Blazers": 43.5, Warriors: 40.5, Suns: 40.5, Jazz: 35.5, Mavericks: 34.5, Pelicans: 27.5,
+  Clippers: 28.5, Grizzlies: 28.5, Kings: 21.5,
+  Knicks: 52.5, Celtics: 51.5, Pistons: 50.5, Cavaliers: 47.5, "76ers": 50.5, Heat: 46.5,
+  Raptors: 45.5, Pacers: 44.5, Magic: 43.5, Hawks: 43.5, Hornets: 37.5, Wizards: 35.5,
+  Bucks: 26.5, Bulls: 27.5, Nets: 24.5,
 };
 
 // A team's price in dollars is exactly its Vegas-projected win total.
