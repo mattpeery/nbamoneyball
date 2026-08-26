@@ -61,16 +61,8 @@ export function LandingHero({
           </h1>
           <p className="font-display text-[19px] font-medium text-[#55595E] mt-2 leading-snug">A zero-maintenance NBA pick &apos;em game</p>
           {hasHero && (
-            <div className="relative inline-block mt-8">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/hero.png" alt="NBA Moneyball" className="w-48 h-auto" />
-              <div className="absolute -top-2 right-[-58px] w-[130px]">
-                <div className="relative bg-white border-2 border-[#131518] rounded-2xl px-2.5 py-2 text-[12px] font-bold text-[#131518] text-center leading-snug">
-                  Who really knows ball?
-                  <div className="absolute left-6 -bottom-[7px] w-3.5 h-3.5 bg-white border-b-2 border-r-2 border-[#131518] rotate-45" />
-                </div>
-              </div>
-            </div>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/hero.png" alt="NBA Moneyball" className="mx-auto mt-8 w-48 h-auto" />
           )}
         </div>
 
