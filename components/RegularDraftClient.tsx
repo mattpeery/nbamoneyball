@@ -5,15 +5,11 @@ import { useRouter } from "next/navigation";
 import { Lock, ChevronDown } from "lucide-react";
 import { EAST, WEST, REG_BUDGET, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
-import { isRegularDraftOpen, getOpenAddDropWindow } from "@/lib/scoring";
+import { isRegularDraftOpen } from "@/lib/scoring";
 import { rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
-
-function formatWindowDate(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-}
 
 export function RegularDraftClient({
   teamdata,
@@ -31,8 +27,8 @@ export function RegularDraftClient({
   const [alloc, setAlloc] = useState<Record<string, number>>(preloaded?.picks || {});
   // The player's own last-saved picks/prices, used to tell "a team they
   // already held, untouched" (validates and displays at its old price)
-  // apart from "a new purchase" (uses today's live price) - matters once
-  // an admin reprices teams for an add/drop window.
+  // apart from "a new purchase" (uses today's live price) - matters
+  // whenever an admin reprices a team (e.g. updated Vegas lines).
   const [basePicks, setBasePicks] = useState<Record<string, number>>(preloaded?.picks || {});
   const [baseSnapshot, setBaseSnapshot] = useState<Record<string, number>>(preloaded?.priceSnapshot || {});
   const [msg, setMsg] = useState<{ tone: "error" | "success"; text: string } | null>(null);
@@ -68,8 +64,6 @@ export function RegularDraftClient({
 
   const open = isRegularDraftOpen(teamdata);
   const locked = !open;
-  const pastDeadline = Date.now() > new Date(teamdata.draftDeadline).getTime();
-  const openWindow = pastDeadline ? getOpenAddDropWindow(teamdata) : null;
 
   // A team's "reference price" - used for validation and display - is its
   // OLD (last-saved) price if this session's dollar amount for it matches
@@ -77,6 +71,8 @@ export function RegularDraftClient({
   // (or a resell-and-rebuy). Takes the alloc map as a parameter rather than
   // closing over `alloc` so it stays correct inside setAlloc's functional
   // updaters, which operate on their own local copy across rapid clicks.
+  // Matters whenever an admin reprices teams (e.g. updated Vegas lines)
+  // while some players already hold picks from the old price list.
   function priceRefFor(team: string, allocMap: Record<string, number>): number {
     const dollars = allocMap[team] || 0;
     const unchanged =
@@ -259,14 +255,6 @@ export function RegularDraftClient({
         </div>
       )}
 
-      {!locked && openWindow && (
-        <div className="mt-3 max-w-2xl mx-auto">
-          <Banner>
-            <Check size={13} /> Add/drop window open — trade your roster until {formatWindowDate(openWindow.closesAt)}.
-          </Banner>
-        </div>
-      )}
-
       {([["West", WEST], ["East", EAST]] as const).map(([label, teams]) => {
         const sorted = [...teams].sort((a, b) => (teamdata.regular.prices[b] ?? 0) - (teamdata.regular.prices[a] ?? 0));
         return (
@@ -319,11 +307,7 @@ export function RegularDraftClient({
             >
               {busy ? "Saving…" : "Save Roster"}
             </button>
-            <p className="text-center text-[11px] text-[#6B7280] mt-1.5">
-              {openWindow
-                ? `Add/drop window closes ${formatWindowDate(openWindow.closesAt)}`
-                : "Picks are editable until NBA Opening Day (Oct. 20)"}
-            </p>
+            <p className="text-center text-[11px] text-[#6B7280] mt-1.5">Picks are editable until NBA Opening Day (Oct. 20)</p>
           </div>
         </div>
       )}

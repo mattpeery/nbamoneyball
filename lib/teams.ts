@@ -40,17 +40,11 @@ export const FULL_NAMES: Record<string, string> = {
   Kings: "Sacramento Kings", Grizzlies: "Memphis Grizzlies",
 };
 
-// An admin-scheduled period, after the initial draft deadline, when the
-// draft reopens for trading. Prices for the window are set separately
-// (same `prices` map, just edited again by the admin before it opens).
-export type AddDropWindow = { opensAt: string; closesAt: string };
-
 export type RegularTeamData = {
   prices: Record<string, number>;
   wins: Record<string, number>;
   locked: boolean;
   lastSyncedAt?: string;
-  addDropWindows: AddDropWindow[];
   // Set to the draftDeadline value the "picks lock tomorrow" reminder was
   // last sent for, so the daily cron doesn't send it twice.
   deadlineReminderSentFor?: string;
@@ -79,7 +73,6 @@ export function defaultTeamData(): TeamData {
       prices: { ...DEFAULT_PRICES },
       wins: Object.fromEntries(ALL_TEAMS.map((t) => [t, 0])),
       locked: false,
-      addDropWindows: [],
     },
     playoff: {
       teams: Object.fromEntries(ALL_TEAMS.map((t) => [t, false])),

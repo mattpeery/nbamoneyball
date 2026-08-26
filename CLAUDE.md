@@ -29,8 +29,8 @@ Currently sent:
   `/api/sync-scores`). Fires once, in the 12-to-36-hour window before
   `teamdata.draftDeadline`, to everyone with a saved regular roster;
   idempotency is a `regular.deadlineReminderSentFor` field on `teamdata`
-  (sent-for-this-deadline marker, no schema migration needed — same pattern
-  as `firstWindowDate`) so it never double-sends for the same deadline.
+  (sent-for-this-deadline marker, no schema migration needed since `regular`
+  is a jsonb column) so it never double-sends for the same deadline.
 
 ## Planned / deferred work
 

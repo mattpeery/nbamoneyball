@@ -28,17 +28,6 @@ export function HowItWorksModal({ onClose }: { onClose: () => void }) {
           <span className="font-semibold text-[#131518]">Tip:</span> Good teams are expensive. Bad teams are cheap.
           Pick teams that will beat their projections for the best value.
         </p>
-        <p className="text-[12.5px] text-[#3A3F45] leading-relaxed mb-3">
-          <span className="font-semibold text-[#131518]">Bonus:</span> During the season, you will have three
-          24-hour windows to add/drop teams from your roster:
-        </p>
-        <ol className="space-y-1.5 mb-5 pl-4 list-decimal">
-          <li className="text-[12.5px] text-[#3A3F45] leading-relaxed">
-            The &quot;Overreaction&quot; window, after 5 games
-          </li>
-          <li className="text-[12.5px] text-[#3A3F45] leading-relaxed">The All-Star Break</li>
-          <li className="text-[12.5px] text-[#3A3F45] leading-relaxed">The Trade Deadline</li>
-        </ol>
         <p className="text-[12.5px] text-[#6B7280] leading-relaxed mb-5 italic">
           Example: Bill Simmons uses his $164 to buy the Thunder, Warriors, Celtics, and Nets. Those teams combine to
           win 163 games, earning Bill $163, which he will use to construct his playoff team.

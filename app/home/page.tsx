@@ -5,7 +5,7 @@ import { getGroupById, type Group } from "@/lib/groups";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
 import { getTeamData, getRegularPlayers, getPlayoffPlayers, getRegularPlayersForGroup, getPlayoffPlayersForGroup } from "@/lib/data";
 import { buildLeaderboard } from "@/lib/leaderboard";
-import { isPlayoffDraftOpen, isRegularDraftOpen, getOpenAddDropWindow, getNextAddDropWindow } from "@/lib/scoring";
+import { isPlayoffDraftOpen, isRegularDraftOpen } from "@/lib/scoring";
 import { slug, PUBLIC_GROUP_ID, draftPathFor } from "@/lib/format";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { GroupPasswordGate } from "@/components/GroupPasswordGate";
@@ -69,26 +69,14 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
   const editable = isPlayoff ? isPlayoffDraftOpen(teamdata) : isRegularDraftOpen(teamdata);
 
   const daysToSubmit = !isPlayoff ? daysUntil(teamdata.draftDeadline) : null;
-  const openWindow = !isPlayoff ? getOpenAddDropWindow(teamdata) : null;
-  const nextWindow = !isPlayoff && !openWindow ? getNextAddDropWindow(teamdata) : null;
-  const daysToWindowClose = openWindow ? daysUntil(openWindow.closesAt) : null;
-  const daysToNextWindow = nextWindow ? daysUntil(nextWindow.opensAt) : null;
-
-  // Editable because of a currently-open window vs. still-before-the-initial-
-  // deadline both need "days left to lock" - just pointed at whichever
-  // boundary is actually the reason picks are open right now.
-  const pastDeadline = Date.now() > new Date(teamdata.draftDeadline).getTime();
-  const daysToLock = !isPlayoff ? (pastDeadline ? daysToWindowClose : daysToSubmit) : null;
   const plural = (n: number) => (n === 1 ? "day" : "days");
   const entryNote = isPlayoff
     ? null
     : editable
-    ? daysToLock !== null
-      ? `${daysToLock} ${plural(daysToLock)} left to lock your picks`
+    ? daysToSubmit !== null
+      ? `${daysToSubmit} ${plural(daysToSubmit)} left to lock your picks`
       : null
-    : daysToNextWindow !== null
-    ? `Rosters are locked — ${daysToNextWindow} ${plural(daysToNextWindow)} until the next rebalancing window`
-    : "Rosters are locked";
+    : "Rosters are locked for the season";
 
   return (
     <div className="min-h-screen bg-[#F4F5F6] pb-10">

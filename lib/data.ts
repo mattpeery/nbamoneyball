@@ -7,8 +7,7 @@ import { slug, PUBLIC_GROUP_ID } from "./format";
 type TeamdataRow = {
   id: number;
   phase: "regular" | "playoff";
-  // addDropWindows optional - older saved rows predate it.
-  regular: Omit<TeamData["regular"], "addDropWindows"> & { addDropWindows?: TeamData["regular"]["addDropWindows"] };
+  regular: TeamData["regular"];
   playoff: TeamData["playoff"];
   draft_deadline: string;
 };
@@ -17,8 +16,7 @@ function rowToTeamData(row: TeamdataRow): TeamData {
   return {
     phase: row.phase,
     draftDeadline: row.draft_deadline,
-    // Older saved rows predate addDropWindows - fall back so they don't break.
-    regular: { addDropWindows: [], ...row.regular },
+    regular: row.regular,
     playoff: row.playoff,
   };
 }

@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
   // A team a player already held keeps validating (and gets snapshotted)
   // against its OLD price, not today's live price - otherwise an admin
-  // repricing teams for an add/drop window would break every existing
+  // repricing a team (e.g. updated Vegas lines) would break every existing
   // holder's roster the next time they save anything, even teams they
   // never touched. Only a genuinely new/changed dollar amount for a team
   // uses today's live price.
