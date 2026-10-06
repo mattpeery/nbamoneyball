@@ -8,7 +8,6 @@ import { buildLeaderboard } from "@/lib/leaderboard";
 import { isPlayoffDraftOpen, isRegularDraftOpen } from "@/lib/scoring";
 import { slug, PUBLIC_GROUP_ID, draftPathFor } from "@/lib/format";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
-import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminSession";
 import { GroupPasswordGate } from "@/components/GroupPasswordGate";
 import { HomeLeaderboard } from "@/components/HomeLeaderboard";
 import { UserEntryCard } from "@/components/UserEntryCard";
@@ -69,12 +68,6 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
   const myRow = myIndex >= 0 ? rows[myIndex] : null;
   const editable = isPlayoff ? isPlayoffDraftOpen(teamdata) : isRegularDraftOpen(teamdata);
 
-  // The public pool lists every player's entry and real name, so only the
-  // admin sees it. Everyone else sees their own entry plus a nudge to use a
-  // group; the table is never rendered for them, so nothing leaks in the HTML.
-  const isAdmin = verifyAdminSessionToken(cookieStore.get(ADMIN_COOKIE_NAME)?.value);
-  const hidePublicBoard = selected === PUBLIC_GROUP_ID && !isAdmin;
-
   const daysToSubmit = !isPlayoff ? daysUntil(teamdata.draftDeadline) : null;
   const plural = (n: number) => (n === 1 ? "day" : "days");
   const entryNote = isPlayoff
@@ -127,16 +120,7 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
           )
         )}
 
-        {hidePublicBoard ? (
-          <div className="mt-4 bg-white border border-[#DADFE3] rounded-2xl p-5 text-center">
-            <p className="text-[14px] font-semibold text-[#131518] mb-1">The public leaderboard is private</p>
-            <p className="text-[12.5px] text-[#6B7280]">
-              Create or join a group to see how you stack up against your friends.
-            </p>
-          </div>
-        ) : (
-          <HomeLeaderboard rows={rows} isPlayoff={isPlayoff} />
-        )}
+        <HomeLeaderboard rows={rows} isPlayoff={isPlayoff} />
       </div>
 
       {searchParams.new === "1" && myRow && <RosterSuccessGate teams={myRow.basket.map((b) => b.team)} />}
