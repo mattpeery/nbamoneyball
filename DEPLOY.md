@@ -50,7 +50,7 @@ git push -u origin main
 
 - **Admin access**: tap the landing page title 5× within ~2 seconds, enter `ADMIN_PASSCODE`. From there you can set team prices/wins, toggle the game phase, set the playoff field/multipliers, and edit the draft lock deadline — all without a redeploy.
 - **Groups**: everyone drafts inside a password-protected group, created or joined from the homepage (name + password). Prices, wins, phase, and the draft deadline stay global and shared across all groups; only rosters and each group's leaderboard are partitioned.
-- **Draft deadline**: defaults to 2026-10-20 midnight ET. Change it any time from the Admin page.
+- **Draft deadline**: defaults to 2026-10-20 3:00 PM ET (opening night first tip, Celtics at Pistons). Change it any time from the Admin page.
 - Every `git push` to `main` deploys automatically.
 - Custom domain: Vercel → Project → Settings → Domains.
 

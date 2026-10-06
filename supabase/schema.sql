@@ -15,7 +15,7 @@ create table if not exists public.teamdata (
   phase text not null default 'regular' check (phase in ('regular', 'playoff')),
   regular jsonb not null,
   playoff jsonb not null,
-  draft_deadline timestamptz not null default '2026-10-20T00:00:00-04:00',
+  draft_deadline timestamptz not null default '2026-10-20T15:00:00-04:00',
   updated_at timestamptz not null default now(),
   constraint teamdata_singleton check (id = 1)
 );
