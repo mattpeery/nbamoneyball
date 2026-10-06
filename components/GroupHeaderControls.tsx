@@ -8,6 +8,7 @@ import type { Group } from "@/lib/groups";
 import { PUBLIC_GROUP_ID } from "@/lib/format";
 import { CreateGroupModal } from "@/components/CreateGroupModal";
 import { JoinGroupModal } from "@/components/JoinGroupModal";
+import { InviteGroupModal } from "@/components/InviteGroupModal";
 
 const GREEN_BTN =
   "inline-flex items-center justify-center h-9 px-4 rounded-full border border-[#16A34A] text-[#16A34A] bg-white text-[12px] font-bold hover:bg-[#16A34A] hover:text-white active:bg-[#16A34A] active:text-white transition-colors whitespace-nowrap";
@@ -25,6 +26,7 @@ export function GroupHeaderControls({
   const [open, setOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,8 +101,14 @@ export function GroupHeaderControls({
         <button className={GREEN_BTN} onClick={() => setShowJoin(true)}>
           Join Group
         </button>
+        {selected !== PUBLIC_GROUP_ID && (
+          <button className={GREEN_BTN} onClick={() => setShowInvite(true)}>
+            Invite
+          </button>
+        )}
       </div>
 
+      {showInvite && <InviteGroupModal groupName={selectedName} onClose={() => setShowInvite(false)} />}
       {showCreate && (
         <CreateGroupModal
           onCancel={() => setShowCreate(false)}
