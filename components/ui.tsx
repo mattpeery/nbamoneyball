@@ -87,7 +87,7 @@ export function BudgetBar({
               )}
             </div>
             {roster.length === 0 ? (
-              <p className="text-[12px] text-[#9AA0A6] leading-relaxed">
+              <p className="text-[12px] text-[#6B7280] leading-relaxed">
                 Teams you add will appear here. You can easily remove/change picks before saving.
               </p>
             ) : (
