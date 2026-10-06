@@ -12,7 +12,7 @@ const inter = Inter({
   variable: "--font-body",
 });
 
-const description = "Who can buy the most wins? Free fantasy game for the 2026-27 NBA season.";
+const description = "A zero-maintenance NBA pick 'em game. Free fantasy game for the 2026-27 NBA season.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nbamoneyball.com"),
