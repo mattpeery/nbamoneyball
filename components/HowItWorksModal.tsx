@@ -13,7 +13,7 @@ export function HowItWorksModal({ onClose }: { onClose: () => void }) {
         <ol className="space-y-2 mb-3">
           <li className="text-[13.5px] text-[#3A3F45] leading-relaxed">
             <span className="font-semibold text-[#131518]">1.</span> Before Opening Day (Oct. 20), use your $164
-            &quot;budget&quot; to draft your &quot;team&quot; of 3-7 NBA teams.
+            &quot;budget&quot; to draft your team of 3-7 NBA teams.
           </li>
           <li className="text-[13.5px] text-[#3A3F45] leading-relaxed">
             <span className="font-semibold text-[#131518]">2.</span> At the end of the 2026 - 2027 regular season,
@@ -37,7 +37,7 @@ export function HowItWorksModal({ onClose }: { onClose: () => void }) {
         <ol className="space-y-2 mb-3">
           <li className="text-[13.5px] text-[#3A3F45] leading-relaxed">
             <span className="font-semibold text-[#131518]">1.</span> After the NBA Playoff bracket is set in April,
-            use your new &quot;budget&quot; to build your playoff team (more regular season wins = more spending power to pick
+            use your new budget to build your playoff team (more regular season wins = more spending power to pick
             your playoff roster).
           </li>
           <li className="text-[13.5px] text-[#3A3F45] leading-relaxed">
