@@ -30,7 +30,7 @@ export function HomeLeaderboard({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
           {r.hidden ? (
             <div className="flex items-center gap-1.5 text-[12px] text-[#6B7280]">
               <Lock size={12} className="shrink-0" />
-              <span>Hidden until tip-off</span>
+              <span>Hidden until Opening Day</span>
             </div>
           ) : (
             <RosterCell basket={r.basket} isPlayoff={isPlayoff} />
