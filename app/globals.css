@@ -46,3 +46,18 @@ body {
   animation-name: confetti-burst;
   animation-fill-mode: forwards;
 }
+
+@keyframes hint-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hint-pop {
+  animation: hint-pop 0.25s ease-out;
+}

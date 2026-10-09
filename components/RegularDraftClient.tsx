@@ -245,7 +245,7 @@ export function RegularDraftClient({
           />
         )}
       </div>
-      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} prices={effectivePrices} onRemove={removeTeam} onClearAll={clearAll} />
+      <BudgetBar label="Budget remaining" spent={spent} total={REG_BUDGET} alloc={alloc} prices={effectivePrices} onRemove={removeTeam} onClearAll={clearAll} fractionalHintBelow={40} />
 
       {locked && (
         <div className="mt-3 max-w-2xl mx-auto">

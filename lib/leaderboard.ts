@@ -11,6 +11,8 @@ export type LeaderboardRow = {
   score: number;
   unit: "earned" | "points";
   basket: LeaderboardBasketItem[];
+  /** True when this row's picks were withheld (e.g. before the draft locks). */
+  hidden?: boolean;
 };
 
 export function buildLeaderboard(

@@ -40,6 +40,7 @@ export function BudgetBar({
   prices = {},
   onRemove,
   onClearAll,
+  fractionalHintBelow,
 }: {
   label: string;
   spent: number;
@@ -48,6 +49,8 @@ export function BudgetBar({
   prices?: Record<string, number>;
   onRemove?: (team: string) => void;
   onClearAll?: () => void;
+  /** When set, shows a "buy fractional shares" hint once the remaining budget drops below this (but isn't fully spent). */
+  fractionalHintBelow?: number;
 }) {
   const remaining = total - spent;
   const over = remaining < 0;
@@ -70,6 +73,12 @@ export function BudgetBar({
               {roster.length} team{roster.length !== 1 ? "s" : ""} selected
             </div>
           </div>
+          {fractionalHintBelow !== undefined && remaining > 0.01 && remaining < fractionalHintBelow && (
+            <div className="hint-pop relative inline-block mb-2.5 rounded-lg bg-[#15803D] text-white text-[11.5px] font-semibold px-2.5 py-1.5">
+              <span className="absolute -top-1 left-4 w-2 h-2 rotate-45 bg-[#15803D]" />
+              Buy fractional shares with remaining budget
+            </div>
+          )}
           <div className="h-1.5 rounded-full bg-[#E5E7EA] overflow-hidden">
             <div
               className="h-full rounded-full transition-all"

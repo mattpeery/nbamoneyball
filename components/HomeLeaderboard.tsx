@@ -1,4 +1,4 @@
-import { Trophy } from "lucide-react";
+import { Lock, Trophy } from "lucide-react";
 import type { LeaderboardRow } from "@/lib/leaderboard";
 import { RosterCell, LB_GRID } from "@/components/RosterCell";
 
@@ -27,7 +27,14 @@ export function HomeLeaderboard({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
             <div className="text-[13px] font-semibold text-[#131518] truncate">{r.name}</div>
             {r.sub && <div className="text-[10.5px] text-[#9AA0A6] truncate">{r.sub}</div>}
           </div>
-          <RosterCell basket={r.basket} isPlayoff={isPlayoff} />
+          {r.hidden ? (
+            <div className="flex items-center gap-1.5 text-[12px] text-[#6B7280]">
+              <Lock size={12} className="shrink-0" />
+              <span>Hidden until tip-off</span>
+            </div>
+          ) : (
+            <RosterCell basket={r.basket} isPlayoff={isPlayoff} />
+          )}
           <div className="text-[13px] font-bold text-[#131518]">{isPlayoff ? r.score.toFixed(1) : Math.round(r.score)}</div>
           <div className="text-[12px] text-[#6B7280]">#{i + 1}</div>
         </div>

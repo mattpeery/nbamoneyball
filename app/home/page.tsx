@@ -68,6 +68,21 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
   const myRow = myIndex >= 0 ? rows[myIndex] : null;
   const editable = isPlayoff ? isPlayoffDraftOpen(teamdata) : isRegularDraftOpen(teamdata);
 
+  // Until the draft locks (Opening Day tip-off), nobody sees anyone else's picks -
+  // otherwise people could copy each other. The picks are stripped here on the
+  // server, so they never reach other players' browsers. Your own row stays
+  // visible, and the page re-evaluates on every load, so it reveals itself the
+  // moment the draft locks.
+  const hidePicks = !isPlayoff && editable;
+  const boardRows = hidePicks ? rows.map((r) => (r.key === myKey ? r : { ...r, basket: [], hidden: true })) : rows;
+  const lockLabel = new Date(teamdata.draftDeadline).toLocaleString("en-US", {
+    timeZone: "America/New_York",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
   const daysToSubmit = !isPlayoff ? daysUntil(teamdata.draftDeadline) : null;
   const plural = (n: number) => (n === 1 ? "day" : "days");
   const entryNote = isPlayoff
@@ -120,7 +135,12 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
           )
         )}
 
-        <HomeLeaderboard rows={rows} isPlayoff={isPlayoff} />
+        {hidePicks && boardRows.length > 0 && (
+          <p className="mt-4 text-[12px] text-[#6B7280] text-center">
+            Everyone&apos;s picks stay hidden until Opening Day tip-off ({lockLabel} ET).
+          </p>
+        )}
+        <HomeLeaderboard rows={boardRows} isPlayoff={isPlayoff} />
       </div>
 
       {searchParams.new === "1" && myRow && <RosterSuccessGate teams={myRow.basket.map((b) => b.team)} />}
