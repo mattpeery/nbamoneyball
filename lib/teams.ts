@@ -12,8 +12,8 @@ export const ALL_TEAMS = [...EAST, ...WEST];
 // draft screen. Static reference data, not derived from anything else.
 // Source: sportsbook 2026-27 season win-total lines (updated Oct 2026).
 export const PROJECTED_WINS: Record<string, number> = {
-  Thunder: 62.5, Spurs: 59.5, Nuggets: 49.5, Timberwolves: 48.5, Rockets: 47.5, Lakers: 46.5,
-  "Trail Blazers": 42.5, Warriors: 40.5, Suns: 40.5, Jazz: 37.5, Mavericks: 34.5, Pelicans: 27.5,
+  Thunder: 62.5, Spurs: 59.5, Nuggets: 49.5, Timberwolves: 48.5, Rockets: 48.5, Lakers: 46.5,
+  "Trail Blazers": 41.5, Warriors: 37.5, Suns: 40.5, Jazz: 37.5, Mavericks: 34.5, Pelicans: 28.5,
   Clippers: 28.5, Grizzlies: 29.5, Kings: 21.5,
   Knicks: 52.5, Celtics: 51.5, Pistons: 49.5, Cavaliers: 47.5, "76ers": 50.5, Heat: 46.5,
   Raptors: 46.5, Pacers: 43.5, Magic: 43.5, Hawks: 43.5, Hornets: 39.5, Wizards: 34.5,
