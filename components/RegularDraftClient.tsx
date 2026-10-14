@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, ChevronDown } from "lucide-react";
 import { EAST, WEST, REG_BUDGET, PROJECTED_WINS, type TeamData } from "@/lib/teams";
 import type { PlayerRecord } from "@/lib/scoring";
 import { isRegularDraftOpen } from "@/lib/scoring";
-import { rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
+import { rosterErrorMessage, usd, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { Section, BudgetBar, TeamCard, LoadLookup, Banner, Check, X } from "@/components/ui";
 import { ConfirmDetailsModal } from "@/components/ConfirmDetailsModal";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
@@ -112,6 +112,59 @@ export function RegularDraftClient({
     return next;
   }
 
+  // Prices can change while someone is mid-draft (e.g. the Vegas lines get refreshed).
+  // Re-fetch whenever the tab regains focus so the page never sits on stale prices,
+  // and when a team the player picked THIS session has moved, drop that pick - it was
+  // priced at the old number and would be rejected - and tell them to re-add it.
+  const lastPrices = useRef(teamdata.regular.prices);
+  useEffect(() => {
+    const before = lastPrices.current;
+    const now = teamdata.regular.prices;
+    lastPrices.current = now;
+    const moved = Object.keys(now).filter((t) => before[t] !== now[t]);
+    if (moved.length === 0) return;
+
+    let next = alloc;
+    const removed: string[] = [];
+    for (const t of moved) {
+      const dollars = next[t] || 0;
+      const untouched =
+        basePicks[t] !== undefined && Math.abs(dollars - basePicks[t]) <= 0.01 && baseSnapshot[t] !== undefined;
+      if (dollars > 0 && !untouched) {
+        next = withoutTeam(next, t);
+        removed.push(t);
+      }
+    }
+    if (removed.length === 0) return;
+    // a partial share is sized to the leftover budget, so removing anything also drops it
+    const alsoDropped = Object.keys(alloc).filter((t) => alloc[t] > 0 && !(next[t] > 0) && !removed.includes(t));
+    setAlloc(next);
+    setMsg({
+      tone: "error",
+      text:
+        `Prices just updated: ${removed.map((t) => `${t} is now ${usd(now[t])}`).join(", ")}. We removed ${
+          removed.length > 1 ? "those teams" : "that team"
+        } from your roster - add ${removed.length > 1 ? "them" : "it"} back at the new price.` +
+        (alsoDropped.length > 0
+          ? ` Your partial share of ${alsoDropped.join(" and ")} was also removed, since it was sized to your leftover budget.`
+          : ""),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamdata.regular.prices]);
+
+  useEffect(() => {
+    if (locked) return;
+    const refresh = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [router, locked]);
+
   function toggleTeam(team: string) {
     setMsg(null);
     setAlloc((a) => {
@@ -205,6 +258,12 @@ export function RegularDraftClient({
         const base = leaderboardPathFor(groupId);
         const url = data?.isNew ? `${base}${base.includes("?") ? "&" : "?"}new=1` : base;
         router.push(url);
+        router.refresh();
+      } else if (data?.code === "invalid-amount") {
+        // Almost always a price that moved under us: pull fresh prices (the effect above
+        // then drops any stale pick) and close the form so the explanation is visible.
+        setShowModal(false);
+        setMsg({ tone: "error", text: data.error });
         router.refresh();
       } else {
         setSubmitError(data?.error || "Couldn't submit - check your connection and try again.");

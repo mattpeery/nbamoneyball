@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
   const validationError = validateRoster(picks, REG_BUDGET, effectivePrices);
   if (validationError) {
-    return NextResponse.json({ error: rosterErrorMessage(validationError) }, { status: 400 });
+    return NextResponse.json({ error: rosterErrorMessage(validationError), code: validationError }, { status: 400 });
   }
 
   const spent = Object.values(picks)

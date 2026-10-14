@@ -11,7 +11,7 @@ export function rosterErrorMessage(code: RosterValidationError): string {
     case "over-budget":
       return "Over budget - reduce a pick before submitting.";
     case "invalid-amount":
-      return "One of your picks doesn't match the current price - remove it and buy again.";
+      return "A team's price changed while you were picking. We've refreshed the prices - re-add that team and save again.";
     case "locked":
       return "The draft is locked.";
     default:
