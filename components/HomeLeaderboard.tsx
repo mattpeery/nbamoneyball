@@ -21,7 +21,7 @@ export function HomeLeaderboard({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
         <div className={headerCell}>{isPlayoff ? "Points" : "Total Wins"}</div>
         <div className={headerCell}>Rank</div>
       </div>
-      {rows.map((r, i) => (
+      {rows.map((r) => (
         <div key={r.key} className={`${LB_GRID} px-4 py-3 border-b border-[#ECEEF0] last:border-b-0`}>
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-[#131518] truncate">{r.name}</div>
@@ -36,7 +36,7 @@ export function HomeLeaderboard({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
             <RosterCell basket={r.basket} isPlayoff={isPlayoff} />
           )}
           <div className="text-[13px] font-bold text-[#131518]">{r.score.toFixed(2)}</div>
-          <div className="text-[12px] text-[#6B7280]">#{i + 1}</div>
+          <div className="text-[12px] text-[#6B7280]">{r.tied ? `T-${r.rank}` : `#${r.rank}`}</div>
         </div>
       ))}
     </div>

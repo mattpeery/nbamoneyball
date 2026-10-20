@@ -10,6 +10,7 @@ const GREEN_BTN =
 export function UserEntryCard({
   row,
   rank,
+  tied,
   isPlayoff,
   groupId,
   editable,
@@ -17,6 +18,7 @@ export function UserEntryCard({
 }: {
   row: LeaderboardRow;
   rank: number;
+  tied?: boolean;
   isPlayoff: boolean;
   groupId: string;
   editable: boolean;
@@ -35,7 +37,7 @@ export function UserEntryCard({
         </div>
         <RosterCell basket={row.basket} isPlayoff={isPlayoff} />
         <div className="text-[13px] font-bold text-[#131518]">{row.score.toFixed(2)}</div>
-        <div className="text-[12px] text-[#6B7280]">#{rank}</div>
+        <div className="text-[12px] text-[#6B7280]">{tied ? `T-${rank}` : `#${rank}`}</div>
       </div>
       {editable ? (
         <div className="border-t border-[#ECEEF0] px-4 py-3 flex flex-wrap items-center gap-2">

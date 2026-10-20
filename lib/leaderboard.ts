@@ -11,9 +11,22 @@ export type LeaderboardRow = {
   score: number;
   unit: "earned" | "points";
   basket: LeaderboardBasketItem[];
+  /** Competition rank (1, 1, 3...): rows with equal displayed scores share a rank. */
+  rank: number;
+  tied: boolean;
   /** True when this row's picks were withheld (e.g. before the draft locks). */
   hidden?: boolean;
 };
+
+/** Assigns tied ranks by the score as displayed (2 decimals), to rows already sorted by score desc. */
+function withRanks<T extends Omit<LeaderboardRow, "rank" | "tied">>(sorted: T[]): (T & { rank: number; tied: boolean })[] {
+  const shown = (r: T) => r.score.toFixed(2);
+  return sorted.map((r, i) => {
+    const first = sorted.findIndex((o) => shown(o) === shown(r));
+    const count = sorted.filter((o) => shown(o) === shown(r)).length;
+    return { ...r, rank: first + 1, tied: count > 1 };
+  });
+}
 
 export function buildLeaderboard(
   teamdata: TeamData,
@@ -39,7 +52,7 @@ export function buildLeaderboard(
         return { key: slug(p.email), name: p.entryName || p.name, sub: p.entryName ? p.name : null, score, basket, unit: "points" as const };
       })
       .sort((a, b) => b.score - a.score);
-    return { isPlayoff, rows };
+    return { isPlayoff, rows: withRanks(rows) };
   }
 
   const rows = regularPlayers
@@ -56,5 +69,5 @@ export function buildLeaderboard(
       return { key: slug(p.email), name: p.entryName || p.name, sub: p.entryName ? p.name : null, score, basket, unit: "earned" as const };
     })
     .sort((a, b) => b.score - a.score);
-  return { isPlayoff, rows };
+  return { isPlayoff, rows: withRanks(rows) };
 }

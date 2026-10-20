@@ -116,7 +116,7 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
         />
 
         {myRow ? (
-          <UserEntryCard row={myRow} rank={myIndex + 1} isPlayoff={isPlayoff} groupId={selected} editable={editable} note={entryNote} />
+          <UserEntryCard row={myRow} rank={myRow.rank} tied={myRow.tied} isPlayoff={isPlayoff} groupId={selected} editable={editable} note={entryNote} />
         ) : (
           editable && (
             <div className="mt-4 bg-white border border-[#DADFE3] rounded-2xl p-4 text-center">
