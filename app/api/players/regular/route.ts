@@ -57,13 +57,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "The regular-season draft is locked." }, { status: 423 });
   }
 
+  // Once a player has submitted a roster it's final - the picks window was
+  // reopened for new players only, so nobody who already has picks can edit.
+  const existing = isNew ? null : await getRegularPlayerByEmail(email);
+  const hasSubmitted = !!existing && Object.values(existing.picks || {}).some((v) => v > 0);
+  if (hasSubmitted) {
+    return NextResponse.json({ error: "Your picks are already submitted and can't be edited.", code: "already-submitted" }, { status: 403 });
+  }
+
   // A team a player already held keeps validating (and gets snapshotted)
   // against its OLD price, not today's live price - otherwise an admin
   // repricing a team (e.g. updated Vegas lines) would break every existing
   // holder's roster the next time they save anything, even teams they
   // never touched. Only a genuinely new/changed dollar amount for a team
   // uses today's live price.
-  const existing = isNew ? null : await getRegularPlayerByEmail(email);
   const oldPicks = existing?.picks || {};
   const oldSnapshot = existing?.priceSnapshot || {};
 

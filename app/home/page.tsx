@@ -18,12 +18,6 @@ export const dynamic = "force-dynamic";
 
 const GROUP_COOKIE_PREFIX = "nba_group_";
 
-/** Whole days until an ISO date, or null once it's passed. */
-function daysUntil(iso: string): number | null {
-  const diff = new Date(iso).getTime() - Date.now();
-  return diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : null;
-}
-
 export default async function HomePage({ searchParams }: { searchParams: { g?: string; new?: string } }) {
   const cookieStore = cookies();
 
@@ -68,16 +62,6 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
   const myRow = myIndex >= 0 ? rows[myIndex] : null;
   const editable = isPlayoff ? isPlayoffDraftOpen(teamdata) : isRegularDraftOpen(teamdata);
 
-  const daysToSubmit = !isPlayoff ? daysUntil(teamdata.draftDeadline) : null;
-  const plural = (n: number) => (n === 1 ? "day" : "days");
-  const entryNote = isPlayoff
-    ? null
-    : editable
-    ? daysToSubmit !== null
-      ? `${daysToSubmit} ${plural(daysToSubmit)} left to lock your picks`
-      : null
-    : null;
-
   return (
     <div className="min-h-screen bg-[#F4F5F6] pb-10">
       <div className="px-4 pt-6 max-w-2xl mx-auto">
@@ -101,7 +85,7 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
         />
 
         {myRow ? (
-          <UserEntryCard row={myRow} rank={myRow.rank} tied={myRow.tied} isPlayoff={isPlayoff} groupId={selected} editable={editable} note={entryNote} />
+          <UserEntryCard row={myRow} rank={myRow.rank} tied={myRow.tied} isPlayoff={isPlayoff} groupId={selected} editable={isPlayoff ? editable : false} note={null} />
         ) : (
           editable && (
             <div className="mt-4 bg-white border border-[#DADFE3] rounded-2xl p-4 text-center">
