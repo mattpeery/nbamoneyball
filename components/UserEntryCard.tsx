@@ -34,7 +34,7 @@ export function UserEntryCard({
           {row.sub && <div className="text-[10.5px] text-[#9AA0A6] truncate">{row.sub}</div>}
         </div>
         <RosterCell basket={row.basket} isPlayoff={isPlayoff} />
-        <div className="text-[13px] font-bold text-[#131518]">{isPlayoff ? row.score.toFixed(1) : Math.round(row.score)}</div>
+        <div className="text-[13px] font-bold text-[#131518]">{row.score.toFixed(1)}</div>
         <div className="text-[12px] text-[#6B7280]">#{rank}</div>
       </div>
       {editable ? (

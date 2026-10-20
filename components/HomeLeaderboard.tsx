@@ -35,7 +35,7 @@ export function HomeLeaderboard({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
           ) : (
             <RosterCell basket={r.basket} isPlayoff={isPlayoff} />
           )}
-          <div className="text-[13px] font-bold text-[#131518]">{isPlayoff ? r.score.toFixed(1) : Math.round(r.score)}</div>
+          <div className="text-[13px] font-bold text-[#131518]">{r.score.toFixed(1)}</div>
           <div className="text-[12px] text-[#6B7280]">#{i + 1}</div>
         </div>
       ))}
