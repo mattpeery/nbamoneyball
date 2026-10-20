@@ -91,7 +91,7 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
     ? daysToSubmit !== null
       ? `${daysToSubmit} ${plural(daysToSubmit)} left to lock your picks`
       : null
-    : "Rosters are locked for the season";
+    : null;
 
   return (
     <div className="min-h-screen bg-[#F4F5F6] pb-10">
