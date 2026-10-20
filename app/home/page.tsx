@@ -140,6 +140,9 @@ export default async function HomePage({ searchParams }: { searchParams: { g?: s
             Everyone&apos;s picks stay hidden until Opening Day tip-off ({lockLabel} ET).
           </p>
         )}
+        {!isPlayoff && !editable && boardRows.length > 0 && (
+          <p className="mt-4 text-[12px] text-[#6B7280] text-center">Scores update 1x/day at 4:00 AM ET.</p>
+        )}
         <HomeLeaderboard rows={boardRows} isPlayoff={isPlayoff} />
       </div>
 
