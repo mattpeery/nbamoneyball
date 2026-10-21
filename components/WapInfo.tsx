@@ -38,16 +38,16 @@ export function WapInfo() {
             <h3 className="font-display uppercase tracking-wide text-[20px] font-bold text-[#131518] leading-none">
               WAP: Wins Above Expectation
             </h3>
-            <p className="mt-3 text-[13px] text-[#131518] leading-relaxed">
-              A + or − number showing how many more (or fewer) wins your teams have than we&apos;d expect by now.
+            <p className="mt-3 text-[13px] font-semibold text-[#131518] leading-relaxed">
+              Are your teams beating expectations?
             </p>
             <p className="mt-2 text-[13px] text-[#131518] leading-relaxed">
-              For each team: <span className="font-semibold">wins − expected wins</span>, where expected wins ={" "}
-              projected win total ÷ 82 × games played. Add that up across every team on your roster (a partial share
-              counts for its share).
+              During the draft, all teams were priced such that any combination of teams is expected to win 164 games
+              (1 for each $1 in your budget).
             </p>
-            <p className="mt-2 text-[12px] text-[#6B7280] leading-relaxed">
-              Example: a team projected for 82 wins that is 3-0 is +3.00. A team projected for 41 that is 0-2 is −1.00.
+            <p className="mt-2 text-[13px] text-[#131518] leading-relaxed">
+              Your WAP shows how many wins your teams have relative to what projections expect based on how many games
+              they&apos;ve played so far.
             </p>
           </div>
         </div>
