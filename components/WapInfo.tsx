@@ -38,7 +38,7 @@ export function WapInfo() {
             <h3 className="font-display uppercase tracking-wide text-[20px] font-bold text-[#131518] leading-none">
               WAP: Wins Above Expectation
             </h3>
-            <p className="mt-3 text-[13px] font-semibold text-[#131518] leading-relaxed">
+            <p className="mt-3 text-[13px] text-[#131518] leading-relaxed">
               Are your teams beating expectations?
             </p>
             <p className="mt-2 text-[13px] text-[#131518] leading-relaxed">

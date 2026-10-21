@@ -79,7 +79,10 @@ export function buildLeaderboard(
           const shares = sharesFor(dollars, p.priceSnapshot, team, teamdata.regular.prices);
           const w = teamdata.regular.wins[team] || 0;
           const l = teamdata.regular.losses?.[team] || 0;
-          wap += shares * (w - (teamdata.regular.prices[team] / 82) * (w + l));
+          // Expected wins use the projection the player actually bought at (their price snapshot), so every
+          // roster's full-season expectation is exactly its budget, matching the explainer.
+          const projection = p.priceSnapshot?.[team] ?? teamdata.regular.prices[team];
+          wap += shares * (w - (projection / 82) * (w + l));
           return { team, shares, contrib: shares * w, record: { w, l: teamdata.regular.losses?.[team] || 0 } };
         })
         .sort((a, b) => b.contrib - a.contrib);
