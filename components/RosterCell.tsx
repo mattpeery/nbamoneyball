@@ -19,7 +19,7 @@ export function RosterCell({ basket, isPlayoff }: { basket: LeaderboardBasketIte
             <span className="text-[12px] text-[#131518] truncate">{b.team}</span>
             {b.shares < 0.995 && <span className="text-[10px] text-[#16A34A] whitespace-nowrap">({b.shares.toFixed(2)})</span>}
             <span className="text-[11px] text-[#6B7280] whitespace-nowrap">
-              · {b.contrib.toFixed(1)} {isPlayoff ? "pt" : "W"}
+              {isPlayoff || !b.record ? `${b.contrib.toFixed(1)} ${isPlayoff ? "pt" : "W"}` : `${b.record.w}-${b.record.l}`}
             </span>
           </div>
         );

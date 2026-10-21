@@ -44,6 +44,8 @@ export const FULL_NAMES: Record<string, string> = {
 export type RegularTeamData = {
   prices: Record<string, number>;
   wins: Record<string, number>;
+  /** Regular-season losses per team (set by the score sync; absent until the first sync after this field was added). */
+  losses?: Record<string, number>;
   locked: boolean;
   lastSyncedAt?: string;
   // Set to the draftDeadline value the "picks lock tomorrow" reminder was

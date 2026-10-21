@@ -3,7 +3,13 @@ import type { PlayerRecord, PlayoffPlayerRecord } from "./scoring";
 import { playoffPoints, regularEarned, sharesFor } from "./scoring";
 import { slug } from "./format";
 
-export type LeaderboardBasketItem = { team: string; shares: number; contrib: number };
+export type LeaderboardBasketItem = {
+  team: string;
+  shares: number;
+  contrib: number;
+  /** Regular season only: the team's actual record. */
+  record?: { w: number; l: number };
+};
 export type LeaderboardRow = {
   key: string;
   name: string;
@@ -63,7 +69,7 @@ export function buildLeaderboard(
         .map(([team, dollars]) => {
           const shares = sharesFor(dollars, p.priceSnapshot, team, teamdata.regular.prices);
           const w = teamdata.regular.wins[team] || 0;
-          return { team, shares, contrib: shares * w };
+          return { team, shares, contrib: shares * w, record: { w, l: teamdata.regular.losses?.[team] || 0 } };
         })
         .sort((a, b) => b.contrib - a.contrib);
       return { key: slug(p.email), name: p.entryName || p.name, sub: p.entryName ? p.name : null, score, basket, unit: "earned" as const };

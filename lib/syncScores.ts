@@ -64,17 +64,23 @@ export async function syncRecentGames(daysBack: number): Promise<SyncResult> {
   if (fetchError) return { ok: false, error: `Couldn't recompute wins: ${fetchError.message}` };
 
   const wins = Object.fromEntries(ALL_TEAMS.map((t) => [t, 0])) as Record<string, number>;
+  const losses = Object.fromEntries(ALL_TEAMS.map((t) => [t, 0])) as Record<string, number>;
   for (const g of (allGames as { home_team: string; away_team: string; home_score: number; away_score: number }[]) || []) {
-    const winner = g.home_score > g.away_score ? g.home_team : g.away_team;
+    const homeWon = g.home_score > g.away_score;
+    const winner = homeWon ? g.home_team : g.away_team;
+    const loser = homeWon ? g.away_team : g.home_team;
     if (winner in wins) wins[winner] += 1;
+    if (loser in losses) losses[loser] += 1;
   }
 
   const teamdata = await getTeamData();
-  const teamsUpdated = ALL_TEAMS.filter((t) => teamdata.regular.wins[t] !== wins[t]).length;
+  const teamsUpdated = ALL_TEAMS.filter(
+    (t) => teamdata.regular.wins[t] !== wins[t] || (teamdata.regular.losses?.[t] ?? 0) !== losses[t]
+  ).length;
 
   const saveResult = await saveTeamData({
     ...teamdata,
-    regular: { ...teamdata.regular, wins, lastSyncedAt: new Date().toISOString() },
+    regular: { ...teamdata.regular, wins, losses, lastSyncedAt: new Date().toISOString() },
   });
   if (!saveResult.ok) return { ok: false, error: saveResult.error };
 
