@@ -15,6 +15,8 @@ export type LeaderboardRow = {
   name: string;
   sub: string | null;
   score: number;
+  /** Regular season only: wins above expectation (share-weighted). */
+  wap?: number;
   unit: "earned" | "points";
   basket: LeaderboardBasketItem[];
   /** Competition rank (1, 1, 3...): rows with equal displayed scores share a rank. */
@@ -32,6 +34,12 @@ function withRanks<T extends Omit<LeaderboardRow, "rank" | "tied">>(sorted: T[])
     const count = sorted.filter((o) => shown(o) === shown(r)).length;
     return { ...r, rank: first + 1, tied: count > 1 };
   });
+}
+
+/** Signed two-decimal WAP, e.g. "+0.32" / "-0.32". */
+export function formatWap(v: number): string {
+  const r = Math.round(v * 100) / 100;
+  return `${r < 0 ? "-" : "+"}${Math.abs(r).toFixed(2)}`;
 }
 
 export function buildLeaderboard(
@@ -64,15 +72,18 @@ export function buildLeaderboard(
   const rows = regularPlayers
     .map((p) => {
       const score = regularEarned(p, teamdata);
+      let wap = 0;
       const basket: LeaderboardBasketItem[] = Object.entries(p.picks || {})
         .filter(([, v]) => v > 0)
         .map(([team, dollars]) => {
           const shares = sharesFor(dollars, p.priceSnapshot, team, teamdata.regular.prices);
           const w = teamdata.regular.wins[team] || 0;
+          const l = teamdata.regular.losses?.[team] || 0;
+          wap += shares * (w - (teamdata.regular.prices[team] / 82) * (w + l));
           return { team, shares, contrib: shares * w, record: { w, l: teamdata.regular.losses?.[team] || 0 } };
         })
         .sort((a, b) => b.contrib - a.contrib);
-      return { key: slug(p.email), name: p.entryName || p.name, sub: p.entryName ? p.name : null, score, basket, unit: "earned" as const };
+      return { key: slug(p.email), name: p.entryName || p.name, sub: p.entryName ? p.name : null, score, wap, basket, unit: "earned" as const };
     })
     .sort((a, b) => b.score - a.score);
   return { isPlayoff, rows: withRanks(rows) };

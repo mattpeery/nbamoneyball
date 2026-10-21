@@ -1,6 +1,7 @@
 import { Lock, Trophy } from "lucide-react";
-import type { LeaderboardRow } from "@/lib/leaderboard";
-import { RosterCell, LB_GRID } from "@/components/RosterCell";
+import { formatWap, type LeaderboardRow } from "@/lib/leaderboard";
+import { RosterCell, LB_GRID, LB_GRID_WAP } from "@/components/RosterCell";
+import { WapInfo } from "@/components/WapInfo";
 
 export function HomeLeaderboard({ rows, isPlayoff }: { rows: LeaderboardRow[]; isPlayoff: boolean }) {
   if (rows.length === 0) {
@@ -12,17 +13,23 @@ export function HomeLeaderboard({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
     );
   }
 
+  const grid = isPlayoff ? LB_GRID : LB_GRID_WAP;
   const headerCell = "text-[9.5px] uppercase tracking-wider text-[#9AA0A6] font-semibold";
   return (
     <div className="mt-4 bg-white border border-[#DADFE3] rounded-2xl overflow-hidden">
-      <div className={`${LB_GRID} px-4 py-2.5 border-b border-[#ECEEF0] bg-[#FAFAFA]`}>
+      <div className={`${grid} px-4 py-2.5 border-b border-[#ECEEF0] bg-[#FAFAFA]`}>
         <div className={headerCell}>Entry Name</div>
         <div className={headerCell}>Roster</div>
         <div className={headerCell}>{isPlayoff ? "Points" : "Total Wins"}</div>
         <div className={headerCell}>Rank</div>
+        {!isPlayoff && (
+          <div className={`${headerCell} flex items-center gap-1`}>
+            WAP <WapInfo />
+          </div>
+        )}
       </div>
       {rows.map((r) => (
-        <div key={r.key} className={`${LB_GRID} px-4 py-3 border-b border-[#ECEEF0] last:border-b-0`}>
+        <div key={r.key} className={`${grid} px-4 py-3 border-b border-[#ECEEF0] last:border-b-0`}>
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-[#131518] truncate">{r.name}</div>
             {r.sub && <div className="text-[10.5px] text-[#9AA0A6] truncate">{r.sub}</div>}
@@ -37,6 +44,7 @@ export function HomeLeaderboard({ rows, isPlayoff }: { rows: LeaderboardRow[]; i
           )}
           <div className="text-[13px] font-bold text-[#131518]">{r.score.toFixed(2)}</div>
           <div className="text-[12px] text-[#6B7280]">{r.tied ? `T-${r.rank}` : `#${r.rank}`}</div>
+          {!isPlayoff && <div className="text-[12px] text-[#131518]">{formatWap(r.wap ?? 0)}</div>}
         </div>
       ))}
     </div>
