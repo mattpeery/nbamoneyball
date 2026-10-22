@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const found = await getRegularPlayerByEmail(email);
   if (!found) {
     return NextResponse.json(
-      { error: "No entry found for that email - tap Play Now to make your picks." },
+      { error: "No entry found for that email." },
       { status: 404 }
     );
   }

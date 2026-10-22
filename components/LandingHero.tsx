@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Flag } from "lucide-react";
 import { useCountdown } from "@/lib/useCountdown";
@@ -66,19 +65,13 @@ export function LandingHero({
           )}
         </div>
 
-        <Link
-          href="/draft"
+        <button
+          onClick={() => setShowLogin(true)}
           className="font-display uppercase tracking-wide mt-1 block w-full py-4 rounded-2xl bg-[#16A34A] text-white text-[16px] font-semibold active:scale-[0.98] transition-transform text-center"
         >
-          Play Now
-        </Link>
+          Log In
+        </button>
         <div className="flex gap-2 mt-3">
-          <button
-            onClick={() => setShowLogin(true)}
-            className="font-display uppercase tracking-wide flex-1 py-3 rounded-2xl bg-white border border-[#DADFE3] text-[#131518] text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
-          >
-            Log In
-          </button>
           <button
             onClick={() => setShowJoin(true)}
             className="font-display uppercase tracking-wide flex-1 py-3 rounded-2xl bg-white border border-[#DADFE3] text-[#131518] text-[13.5px] font-semibold active:scale-[0.98] transition-transform"
