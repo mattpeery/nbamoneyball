@@ -157,6 +157,14 @@ export async function getPlayerPasswordHash(email: string): Promise<string | nul
   return (data as { password_hash?: string } | null)?.password_hash || null;
 }
 
+/** The ids of the (private) groups a player belongs to. */
+export async function getPlayerGroupIds(email: string): Promise<string[]> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return [];
+  const { data } = await supabase.from("players").select("group_ids").eq("id", slug(email)).maybeSingle();
+  return ((data as { group_ids?: string[] } | null)?.group_ids || []).filter((g) => g !== PUBLIC_GROUP_ID);
+}
+
 /** Overwrites a player's password hash (used by the forgot-password reset flow). No-op if they have no roster row yet. */
 export async function setPlayerPasswordHash(email: string, passwordHash: string): Promise<SaveResult> {
   const supabase = getSupabaseAdmin();

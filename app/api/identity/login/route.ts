@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRegularPlayerByEmail, getPlayerPasswordHash } from "@/lib/data";
+import { getRegularPlayerByEmail, getPlayerPasswordHash, getPlayerGroupIds } from "@/lib/data";
+import { getGroupById } from "@/lib/groups";
+import { createGroupSessionToken, groupCookieName } from "@/lib/groupSession";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 import { verifyPassword } from "@/lib/password";
 
@@ -25,6 +27,24 @@ export async function POST(req: NextRequest) {
   }
 
   const res = NextResponse.json({ ok: true });
+
+  // Logging in proves who they are, so also let them straight into every group
+  // they already belong to - otherwise a new browser/device (or an expired
+  // 30-day group cookie) makes them re-enter each group's password.
+  const groupIds = await getPlayerGroupIds(email);
+  for (const id of groupIds) {
+    if (!(await getGroupById(id))) continue;
+    const token = createGroupSessionToken(id);
+    if (!token) continue;
+    res.cookies.set(groupCookieName(id), token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  }
+
   res.cookies.set(IDENTITY_COOKIE_NAME, email.toLowerCase(), {
     httpOnly: false,
     sameSite: "lax",
