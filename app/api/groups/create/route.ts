@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createGroup } from "@/lib/groups";
 import { addGroupMember } from "@/lib/data";
-import { createGroupSessionToken, groupCookieName } from "@/lib/groupSession";
+import { createGroupSessionToken, groupCookieName, GROUP_SESSION_MAX_AGE_S } from "@/lib/groupSession";
 import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
 
 export async function POST(req: NextRequest) {
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     secure: true,
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: GROUP_SESSION_MAX_AGE_S,
   });
   return res;
 }

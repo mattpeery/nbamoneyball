@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRegularPlayerByEmail, getPlayerPasswordHash, getPlayerGroupIds } from "@/lib/data";
 import { getGroupById } from "@/lib/groups";
-import { createGroupSessionToken, groupCookieName } from "@/lib/groupSession";
-import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
+import { createGroupSessionToken, groupCookieName, GROUP_SESSION_MAX_AGE_S } from "@/lib/groupSession";
+import { IDENTITY_COOKIE_NAME, IDENTITY_MAX_AGE_S } from "@/lib/identity";
 import { verifyPassword } from "@/lib/password";
 
 export async function POST(req: NextRequest) {
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: GROUP_SESSION_MAX_AGE_S,
     });
   }
 
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     httpOnly: false,
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 180,
+    maxAge: IDENTITY_MAX_AGE_S,
   });
   return res;
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getTeamData, getRegularPlayerByEmail, getPlayoffPlayerByEmail, getPlayerPasswordHash, upsertPlayoffPlayer } from "@/lib/data";
 import { isPlayoffDraftOpen, regularEarned, validateRoster } from "@/lib/scoring";
 import { ALL_TEAMS, FULL_NAMES } from "@/lib/teams";
-import { IDENTITY_COOKIE_NAME } from "@/lib/identity";
+import { IDENTITY_COOKIE_NAME, IDENTITY_MAX_AGE_S } from "@/lib/identity";
 import { rosterErrorMessage, PUBLIC_GROUP_ID, leaderboardPathFor } from "@/lib/format";
 import { groupCookieName, verifyGroupSessionToken } from "@/lib/groupSession";
 import { verifyPassword } from "@/lib/password";
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     httpOnly: false,
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 180,
+    maxAge: IDENTITY_MAX_AGE_S,
   });
   return res;
 }

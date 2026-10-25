@@ -2,7 +2,9 @@ import "server-only";
 import crypto from "crypto";
 
 const COOKIE_PREFIX = "nba_group_";
-const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days - "you know the password," not security-critical
+/** A year, so members aren't re-asked for the group password during the season. "You know the password," not security-critical. */
+export const GROUP_SESSION_MAX_AGE_S = 365 * 24 * 60 * 60;
+const SESSION_TTL_MS = GROUP_SESSION_MAX_AGE_S * 1000;
 
 function sign(value: string, secret: string): string {
   return crypto.createHmac("sha256", secret).update(value).digest("hex");
